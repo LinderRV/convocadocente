@@ -1,4 +1,4 @@
-// Servicio de autenticación con Google - IMPLEMENTACIÓN REAL
+// Servicio de autenticación con Google - IMPLEMENTACIÓN REAL OPTIMIZADA
 class GoogleAuthService {
   constructor() {
     this.clientId = '977301681092-9ai03ej4dh51k6n80404m7s6mlc5on1j.apps.googleusercontent.com';
@@ -21,12 +21,14 @@ class GoogleAuthService {
       
       script.onload = () => {
         if (window.google) {
-          // Configurar Google Identity
+          // Configurar Google Identity con configuración optimizada
           window.google.accounts.id.initialize({
             client_id: this.clientId,
             callback: this.handleCredentialResponse.bind(this),
             auto_select: false,
             cancel_on_tap_outside: true,
+            use_fedcm_for_prompt: false, // Deshabilitar FedCM para evitar errores CORS
+            itp_support: true
           });
           this.isInitialized = true;
           resolve();
@@ -49,37 +51,17 @@ class GoogleAuthService {
     console.log('Credential response:', response);
   }
 
-  // Iniciar sesión con Google
+  // Iniciar sesión con Google - Usar directamente popup para mejor experiencia
   async signIn() {
     if (!this.isInitialized) {
       await this.init();
     }
 
-    return new Promise((resolve, reject) => {
-      this.handleCredentialResponse = (response) => {
-        if (response.credential) {
-          // Decodificar el JWT token
-          const userInfo = this.parseJwtToken(response.credential);
-          resolve({
-            credential: response.credential,
-            userInfo: userInfo
-          });
-        } else {
-          reject(new Error('No se recibieron credenciales de Google'));
-        }
-      };
-
-      // Mostrar el prompt de Google
-      window.google.accounts.id.prompt((notification) => {
-        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-          // Si el prompt no se muestra, usar popup como alternativa
-          this.signInWithPopup().then(resolve).catch(reject);
-        }
-      });
-    });
+    // Usar directamente el popup OAuth2 para evitar problemas de FedCM
+    return this.signInWithPopup();
   }
 
-  // Alternativa con popup (OAuth 2.0)
+  // Método principal con popup (OAuth 2.0) - Más confiable
   async signInWithPopup() {
     if (!this.isInitialized) {
       await this.init();
@@ -90,7 +72,7 @@ class GoogleAuthService {
         client_id: this.clientId,
         scope: 'email profile openid',
         callback: async (response) => {
-          if (response.access_token) {
+          if (response.access_token && !response.error) {
             try {
               // Obtener información del usuario
               const userInfo = await this.getUserInfo(response.access_token);
@@ -99,15 +81,18 @@ class GoogleAuthService {
                 userInfo: userInfo
               });
             } catch (error) {
-              reject(error);
+              reject(new Error('Error al obtener información del usuario: ' + error.message));
             }
           } else {
-            reject(new Error('No se obtuvo access token de Google'));
+            reject(new Error(response.error || 'No se obtuvo access token de Google'));
           }
         },
       });
       
-      tokenClient.requestAccessToken();
+      // Solicitar token
+      tokenClient.requestAccessToken({
+        prompt: 'select_account' // Siempre mostrar selector de cuenta
+      });
     });
   }
 
@@ -115,40 +100,27 @@ class GoogleAuthService {
   async getUserInfo(accessToken) {
     const response = await fetch(`https://www.googleapis.com/oauth2/v2/userinfo`, {
       headers: {
-        'Authorization': `Bearer ${accessToken}`
+        'Authorization': `Bearer ${accessToken}`,
+        'Accept': 'application/json'
       }
     });
     
     if (!response.ok) {
-      throw new Error('Error al obtener información del usuario de Google');
+      throw new Error(`Error ${response.status}: ${response.statusText}`);
     }
     
     return await response.json();
   }
 
-  // Decodificar JWT token de Google
-  parseJwtToken(token) {
-    try {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(
-        atob(base64)
-          .split('')
-          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-          .join('')
-      );
-      
-      return JSON.parse(jsonPayload);
-    } catch (error) {
-      console.error('Error al decodificar token JWT de Google:', error);
-      return null;
-    }
-  }
-
   // Cerrar sesión
   signOut() {
-    if (window.google) {
-      window.google.accounts.id.disableAutoSelect();
+    if (window.google && window.google.accounts) {
+      // Revocar tokens si es posible
+      try {
+        window.google.accounts.id.disableAutoSelect();
+      } catch (error) {
+        console.log('No se pudo desactivar auto-select:', error);
+      }
     }
   }
 }
