@@ -50,6 +50,10 @@ export const authAPI = {
   // Iniciar sesión
   login: (credentials) => api.post('/auth/login', credentials),
   
+  // Iniciar sesión con Google
+  googleLogin: (googleData) => api.post('/auth/google', googleData),
+  login: (credentials) => api.post('/auth/login', credentials),
+  
   // Cerrar sesión
   logout: () => api.post('/auth/logout'),
   

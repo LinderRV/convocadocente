@@ -8,17 +8,14 @@ class Usuario {
     // Crear un nuevo usuario
     static async create(userData) {
         const sql = `
-            INSERT INTO usuarios (email, password, nombre, apellido, telefono, rol, estado, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
+            INSERT INTO usuarios (email, password, nombre, google_id, created_at)
+            VALUES (?, ?, ?, ?, NOW())
         `;
         const params = [
             userData.email,
             userData.password,
             userData.nombre,
-            userData.apellido,
-            userData.telefono || null,
-            userData.rol || 'docente',
-            userData.estado || 'activo'
+            userData.google_id || null
         ];
         
         const result = await query(sql, params);
@@ -86,10 +83,17 @@ class Usuario {
         return results.map(row => new Usuario(row));
     }
 
-    // Eliminar usuario (soft delete)
-    static async delete(id) {
-        const sql = 'UPDATE usuarios SET estado = "inactivo" WHERE id = ?';
+    // Actualizar último login
+    static async updateLastLogin(id) {
+        const sql = 'UPDATE usuarios SET last_login = NOW() WHERE id = ?';
         const result = await query(sql, [id]);
+        return result.affectedRows > 0;
+    }
+
+    // Actualizar Google ID
+    static async updateGoogleId(id, googleId) {
+        const sql = 'UPDATE usuarios SET google_id = ? WHERE id = ?';
+        const result = await query(sql, [googleId, id]);
         return result.affectedRows > 0;
     }
 
@@ -99,7 +103,5 @@ class Usuario {
         return userData;
     }
 }
-
-module.exports = Usuario;
 
 module.exports = Usuario;

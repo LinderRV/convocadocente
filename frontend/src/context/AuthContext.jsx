@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { authAPI } from '../services/api';
+import googleAuthService from '../services/googleAuth';
 
 // Estados de autenticación
 const initialState = {
@@ -184,6 +185,43 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Función para iniciar sesión con Google
+  const googleLogin = async () => {
+    try {
+      dispatch({ type: AuthActionTypes.LOGIN_START });
+      
+      // Inicializar Google Auth con credenciales reales
+      await googleAuthService.init();
+      
+      // Obtener credenciales de Google
+      const googleResult = await googleAuthService.signIn();
+      
+      // Enviar datos al backend
+      const response = await authAPI.googleLogin({
+        credential: googleResult.credential,
+        userInfo: googleResult.userInfo,
+        access_token: googleResult.access_token
+      });
+      
+      if (response.data.success) {
+        dispatch({
+          type: AuthActionTypes.LOGIN_SUCCESS,
+          payload: response.data.data
+        });
+        return { success: true };
+      } else {
+        throw new Error(response.data.message || 'Error al iniciar sesión con Google');
+      }
+    } catch (error) {
+      const errorMessage = error.message || 'Error al iniciar sesión con Google';
+      dispatch({
+        type: AuthActionTypes.LOGIN_FAILURE,
+        payload: errorMessage
+      });
+      return { success: false, error: errorMessage };
+    }
+  };
+
   // Función para cerrar sesión
   const logout = async () => {
     try {
@@ -262,6 +300,7 @@ export const AuthProvider = ({ children }) => {
     // Acciones
     login,
     register,
+    googleLogin,
     logout,
     updateProfile,
     changePassword,

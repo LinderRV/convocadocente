@@ -16,7 +16,8 @@ import {
   Card,
   CardContent,
   Fade,
-  useTheme
+  useTheme,
+  Snackbar
 } from '@mui/material';
 import { 
   Google as GoogleIcon,
@@ -24,13 +25,14 @@ import {
   Lock as LockIcon,
   Person as PersonIcon,
   Visibility,
-  VisibilityOff
+  VisibilityOff,
+  CheckCircle as CheckCircleIcon
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, register, googleLogin } = useAuth();
   const theme = useTheme();
   
   const [formData, setFormData] = useState({
@@ -41,6 +43,8 @@ const LoginPage = () => {
   const [error, setError] = useState('');
   const [isRegisterMode, setIsRegisterMode] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [openSnackbar, setOpenSnackbar] = useState(false);
 
   // Agregar campos para registro
   const [registerData, setRegisterData] = useState({
@@ -63,9 +67,27 @@ const LoginPage = () => {
     }
   };
 
-  const handleGoogleLogin = () => {
-    // Mockup - aquí iría la integración con Google
-    alert('Funcionalidad de Google en desarrollo');
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    setError('');
+    
+    try {
+      // Usar Google Auth REAL con las credenciales proporcionadas
+      const result = await googleLogin();
+      
+      if (result.success) {
+        setSuccessMessage('¡Inicio de sesión exitoso con Google!');
+        setOpenSnackbar(true);
+        navigate('/dashboard');
+      } else {
+        setError(result.error || 'Error al iniciar sesión con Google');
+      }
+    } catch (err) {
+      console.error('Error en Google Login:', err);
+      setError('Error de conexión con Google: ' + (err.message || 'Error desconocido'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleRegister = async (e) => {
@@ -74,12 +96,23 @@ const LoginPage = () => {
     setError('');
 
     try {
-      // Mockup - aquí iría la lógica de registro
-      console.log('Datos de registro:', registerData);
-      alert('Registro exitoso - Funcionalidad en desarrollo');
-      setIsRegisterMode(false);
+      const result = await register(registerData);
+      
+      if (result.success) {
+        setSuccessMessage('¡Registro exitoso! Ahora puedes iniciar sesión.');
+        setOpenSnackbar(true);
+        setIsRegisterMode(false);
+        // Limpiar formulario
+        setRegisterData({
+          nombre: '',
+          email: '',
+          password: ''
+        });
+      } else {
+        setError(result.error || 'Error en el registro');
+      }
     } catch (err) {
-      setError('Error en el registro');
+      setError('Error de conexión');
     } finally {
       setLoading(false);
     }
@@ -322,6 +355,7 @@ const LoginPage = () => {
                       onClick={() => {
                         setIsRegisterMode(!isRegisterMode);
                         setError('');
+                        setSuccessMessage('');
                       }}
                       disabled={loading}
                       sx={{
@@ -338,6 +372,31 @@ const LoginPage = () => {
             </Box>
           </Card>
         </Fade>
+
+        {/* Snackbar para mensajes de éxito */}
+        <Snackbar
+          open={openSnackbar}
+          autoHideDuration={6000}
+          onClose={() => setOpenSnackbar(false)}
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        >
+          <Alert
+            onClose={() => setOpenSnackbar(false)}
+            severity="success"
+            variant="filled"
+            icon={<CheckCircleIcon fontSize="inherit" />}
+            sx={{
+              borderRadius: 2,
+              fontSize: '1rem',
+              fontWeight: 500,
+              '& .MuiAlert-icon': {
+                fontSize: '1.5rem'
+              }
+            }}
+          >
+            {successMessage}
+          </Alert>
+        </Snackbar>
       </Container>
     </Box>
   );

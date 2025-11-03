@@ -1,5 +1,6 @@
 const { body, validationResult } = require('express-validator');
 const AuthService = require('../services/AuthService');
+const { OAuth2Client } = require('google-auth-library');
 
 class AuthController {
     // Validaciones para registro
@@ -9,30 +10,14 @@ class AuthController {
             .normalizeEmail()
             .withMessage('Debe proporcionar un email válido'),
         body('password')
-            .isLength({ min: 8 })
-            .withMessage('La contraseña debe tener al menos 8 caracteres')
-            .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-            .withMessage('La contraseña debe contener al menos una mayúscula, una minúscula y un número'),
+            .isLength({ min: 6 })
+            .withMessage('La contraseña debe tener al menos 6 caracteres'),
         body('nombre')
             .trim()
-            .isLength({ min: 2, max: 100 })
-            .withMessage('El nombre debe tener entre 2 y 100 caracteres')
+            .isLength({ min: 2, max: 255 })
+            .withMessage('El nombre debe tener entre 2 y 255 caracteres')
             .matches(/^[a-zA-ZáéíóúñÁÉÍÓÚÑ\s]+$/)
-            .withMessage('El nombre solo puede contener letras y espacios'),
-        body('apellido')
-            .trim()
-            .isLength({ min: 2, max: 100 })
-            .withMessage('El apellido debe tener entre 2 y 100 caracteres')
-            .matches(/^[a-zA-ZáéíóúñÁÉÍÓÚÑ\s]+$/)
-            .withMessage('El apellido solo puede contener letras y espacios'),
-        body('telefono')
-            .optional()
-            .matches(/^[+]?[\d\s\-()]{7,15}$/)
-            .withMessage('Formato de teléfono inválido'),
-        body('rol')
-            .optional()
-            .isIn(['docente', 'coordinador'])
-            .withMessage('Rol inválido')
+            .withMessage('El nombre solo puede contener letras y espacios')
     ];
 
     // Validaciones para login
@@ -95,6 +80,53 @@ class AuthController {
             res.json({
                 success: true,
                 message: 'Inicio de sesión exitoso',
+                data: result
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    // Iniciar sesión con Google
+    static async googleLogin(req, res, next) {
+        try {
+            const { credential, userInfo, access_token } = req.body;
+
+            if (!credential && !userInfo) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Credenciales de Google requeridas'
+                });
+            }
+
+            let googlePayload;
+
+            if (credential) {
+                // Verificar credential token con Google
+                const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+                const ticket = await client.verifyIdToken({
+                    idToken: credential,
+                    audience: process.env.GOOGLE_CLIENT_ID,
+                });
+                googlePayload = ticket.getPayload();
+            } else if (userInfo) {
+                // Usar userInfo directamente (ya obtenido del access_token)
+                googlePayload = userInfo;
+            }
+
+            if (!googlePayload || !googlePayload.email) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Token de Google inválido o sin email'
+                });
+            }
+
+            // Procesar login con Google
+            const result = await AuthService.googleLogin(googlePayload);
+
+            res.json({
+                success: true,
+                message: 'Inicio de sesión con Google exitoso',
                 data: result
             });
         } catch (error) {

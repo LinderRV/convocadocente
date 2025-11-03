@@ -17,21 +17,18 @@ class AuthService {
             const saltRounds = 12;
             const hashedPassword = await bcrypt.hash(userData.password, saltRounds);
 
-            // Generar token de verificación
-            const verificationToken = crypto.randomBytes(32).toString('hex');
-
             // Crear usuario
             const userId = await Usuario.create({
-                ...userData,
+                email: userData.email,
                 password: hashedPassword,
-                token_verificacion: verificationToken
+                nombre: userData.nombre,
+                google_id: userData.google_id || null
             });
 
             const user = await Usuario.findById(userId);
             
             return {
-                user: user.toJSON(),
-                verificationToken
+                user: user.toJSON()
             };
         } catch (error) {
             throw new Error(`Error al registrar usuario: ${error.message}`);
@@ -53,13 +50,8 @@ class AuthService {
                 throw new Error('Credenciales inválidas');
             }
 
-            // Verificar si el usuario está activo
-            if (user.estado !== 'activo') {
-                throw new Error('Cuenta desactivada. Contacte al administrador');
-            }
-
             // Actualizar último acceso
-            await Usuario.updateLastAccess(user.id);
+            await Usuario.updateLastLogin(user.id);
 
             // Generar token JWT
             const token = this.generateToken(user);
@@ -73,14 +65,57 @@ class AuthService {
         }
     }
 
+    // Iniciar sesión con Google
+    static async googleLogin(googlePayload) {
+        try {
+            const { email, name, sub: google_id, picture } = googlePayload;
+
+            if (!email) {
+                throw new Error('Email no encontrado en los datos de Google');
+            }
+
+            // Buscar usuario existente por email
+            let user = await Usuario.findByEmail(email);
+
+            if (!user) {
+                // Crear nuevo usuario si no existe
+                const userId = await Usuario.create({
+                    email: email,
+                    nombre: name || email.split('@')[0],
+                    google_id: google_id,
+                    password: null // Sin contraseña para usuarios de Google
+                });
+
+                user = await Usuario.findById(userId);
+            } else {
+                // Actualizar google_id si no existe
+                if (!user.google_id && google_id) {
+                    await Usuario.updateGoogleId(user.id, google_id);
+                    user.google_id = google_id;
+                }
+            }
+
+            // Actualizar último acceso
+            await Usuario.updateLastLogin(user.id);
+
+            // Generar token JWT
+            const token = this.generateToken(user);
+
+            return {
+                user: user.toJSON(),
+                token
+            };
+        } catch (error) {
+            throw new Error(`Error al iniciar sesión con Google: ${error.message}`);
+        }
+    }
+
     // Generar token JWT
     static generateToken(user) {
         const payload = {
             id: user.id,
             email: user.email,
-            rol: user.rol,
-            nombre: user.nombre,
-            apellido: user.apellido
+            nombre: user.nombre
         };
 
         return jwt.sign(payload, process.env.JWT_SECRET || 'fallback_secret', {
