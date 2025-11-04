@@ -6,348 +6,328 @@ import {
   CardContent,
   Grid,
   Button,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Chip,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   TextField,
-  MenuItem,
   Alert,
-  Fab,
-  Pagination,
+  Checkbox,
+  FormControlLabel,
+  Chip,
   FormControl,
   InputLabel,
   Select,
-  Checkbox,
-  FormGroup,
-  FormControlLabel,
-  Switch
+  MenuItem,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  List,
+  ListItem,
+  ListItemText,
+  Divider
 } from '@mui/material';
 import {
-  Add as AddIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
   Schedule as ScheduleIcon,
-  AccessTime as TimeIcon,
-  CalendarToday as CalendarIcon,
-  EventAvailable as EventIcon
+  AccessTime as AccessTimeIcon,
+  School as SchoolIcon,
+  Category as CategoryIcon,
+  ExpandMore as ExpandMoreIcon
 } from '@mui/icons-material';
 
 const HorariosPage = () => {
-  const [openDialog, setOpenDialog] = useState(false);
-  const [editMode, setEditMode] = useState(false);
   const [alert, setAlert] = useState(null);
-  const [page, setPage] = useState(1);
 
-  // DATOS MOCK - Tabla 'docente_horarios'
-  const [horarios, setHorarios] = useState([
-    {
-      id: 1,
-      dia_semana: 'Lunes',
-      turno: 'Mañana',
-      hora_inicio: '08:00',
-      hora_fin: '12:00',
-      es_disponible: true,
-      fecha_registro: '2024-01-15',
-      observaciones: 'Disponible para cursos de pregrado y postgrado'
-    },
-    {
-      id: 2,
-      dia_semana: 'Lunes',
-      turno: 'Tarde',
-      hora_inicio: '14:00',
-      hora_fin: '18:00',
-      es_disponible: true,
-      fecha_registro: '2024-01-15',
-      observaciones: 'Preferible para cursos clínicos'
-    },
-    {
-      id: 3,
-      dia_semana: 'Martes',
-      turno: 'Mañana',
-      hora_inicio: '08:00',
-      hora_fin: '12:00',
-      es_disponible: false,
-      fecha_registro: '2024-01-15',
-      observaciones: 'No disponible por consulta externa en hospital'
-    },
-    {
-      id: 4,
-      dia_semana: 'Miércoles',
-      turno: 'Mañana',
-      hora_inicio: '09:00',
-      hora_fin: '13:00',
-      es_disponible: true,
-      fecha_registro: '2024-01-16',
-      observaciones: 'Ideal para seminarios y conferencias'
-    },
-    {
-      id: 5,
-      dia_semana: 'Jueves',
-      turno: 'Tarde',
-      hora_inicio: '15:00',
-      hora_fin: '19:00',
-      es_disponible: true,
-      fecha_registro: '2024-01-16',
-      observaciones: 'Disponible para clases prácticas'
-    },
-    {
-      id: 6,
-      dia_semana: 'Viernes',
-      turno: 'Mañana',
-      hora_inicio: '08:00',
-      hora_fin: '11:00',
-      es_disponible: true,
-      fecha_registro: '2024-01-17',
-      observaciones: 'Horario reducido por actividades de investigación'
-    }
-  ]);
+  // Jerarquía de selección
+  const [facultadSeleccionada, setFacultadSeleccionada] = useState('');
+  const [especialidadSeleccionada, setEspecialidadSeleccionada] = useState('');
 
-  const [currentHorario, setCurrentHorario] = useState({
-    dia_semana: '',
-    turno: '',
-    hora_inicio: '',
-    hora_fin: '',
-    es_disponible: true,
-    observaciones: ''
+  // Estado simple para cada día
+  const [horarios, setHorarios] = useState({
+    'Lunes': { activo: false, hora_inicio: '', hora_fin: '' },
+    'Martes': { activo: false, hora_inicio: '', hora_fin: '' },
+    'Miércoles': { activo: false, hora_inicio: '', hora_fin: '' },
+    'Jueves': { activo: false, hora_inicio: '', hora_fin: '' },
+    'Viernes': { activo: false, hora_inicio: '', hora_fin: '' },
+    'Sábado': { activo: false, hora_inicio: '', hora_fin: '' },
+    'Domingo': { activo: false, hora_inicio: '', hora_fin: '' }
   });
 
-  const diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-  const turnos = ['Mañana', 'Tarde', 'Noche'];
+  // Cursos de interés seleccionados
+  const [cursosInteres, setCursosInteres] = useState([]);
 
-  // Estadísticas calculadas
-  const estadisticas = {
-    total: horarios.length,
-    disponibles: horarios.filter(h => h.es_disponible).length,
-    noDisponibles: horarios.filter(h => !h.es_disponible).length,
-    horasSemanales: horarios.filter(h => h.es_disponible).reduce((total, h) => {
-      const inicio = new Date(`2024-01-01 ${h.hora_inicio}`);
-      const fin = new Date(`2024-01-01 ${h.hora_fin}`);
-      const horas = (fin - inicio) / (1000 * 60 * 60);
-      return total + horas;
-    }, 0)
+  // Datos mock - JERARQUÍA CORRECTA
+  const facultadesDisponibles = [
+    { c_codfac: 'S', nom_fac: 'CIENCIAS DE LA SALUD' },
+    { c_codfac: 'M', nom_fac: 'MEDICINA' },
+    { c_codfac: 'I', nom_fac: 'INGENIERÍA' },
+    { c_codfac: 'A', nom_fac: 'ADMINISTRACIÓN' }
+  ];
+
+  const especialidadesPorFacultad = {
+    'S': [
+      { c_codesp: 'S1', nomesp: 'ENFERMERÍA' },
+      { c_codesp: 'S2', nomesp: 'OBSTETRICIA' }
+    ],
+    'M': [
+      { c_codesp: 'M1', nomesp: 'CARDIOLOGÍA' },
+      { c_codesp: 'M2', nomesp: 'MEDICINA INTERNA' },
+      { c_codesp: 'M3', nomesp: 'NEUROLOGÍA' }
+    ],
+    'I': [
+      { c_codesp: 'I1', nomesp: 'SISTEMAS' },
+      { c_codesp: 'I2', nomesp: 'INDUSTRIAL' },
+      { c_codesp: 'I3', nomesp: 'CIVIL' }
+    ],
+    'A': [
+      { c_codesp: 'A1', nomesp: 'ADMINISTRACIÓN' },
+      { c_codesp: 'A2', nomesp: 'CONTABILIDAD' }
+    ]
   };
 
-  const handleOpenDialog = (horario = null) => {
-    if (horario) {
-      setCurrentHorario({
-        ...horario
-      });
-      setEditMode(true);
-    } else {
-      setCurrentHorario({
-        dia_semana: '',
-        turno: '',
-        hora_inicio: '',
-        hora_fin: '',
-        es_disponible: true,
-        observaciones: ''
-      });
-      setEditMode(false);
-    }
-    setOpenDialog(true);
+  // Cursos por especialidad específica (plan_estudio_curso)
+  const cursosPorEspecialidad = {
+    'S-S1': [ // CIENCIAS DE LA SALUD - ENFERMERÍA
+      { id: 1, c_nomcur: 'Anatomía y Fisiología Humana' },
+      { id: 2, c_nomcur: 'Fundamentos de Enfermería' },
+      { id: 3, c_nomcur: 'Farmacología en Enfermería' },
+      { id: 4, c_nomcur: 'Cuidados Intensivos' }
+    ],
+    'S-S2': [ // CIENCIAS DE LA SALUD - OBSTETRICIA
+      { id: 5, c_nomcur: 'Obstetricia Básica' },
+      { id: 6, c_nomcur: 'Ginecología Clínica' },
+      { id: 7, c_nomcur: 'Atención Prenatal' }
+    ],
+    'M-M1': [ // MEDICINA - CARDIOLOGÍA
+      { id: 8, c_nomcur: 'Cardiología Intervencional Avanzada' },
+      { id: 9, c_nomcur: 'Ecocardiografía Diagnóstica' },
+      { id: 10, c_nomcur: 'Farmacología Cardiovascular' },
+      { id: 11, c_nomcur: 'Urgencias Cardiológicas' }
+    ],
+    'M-M2': [ // MEDICINA - MEDICINA INTERNA
+      { id: 12, c_nomcur: 'Medicina Interna General' },
+      { id: 13, c_nomcur: 'Endocrinología Clínica' },
+      { id: 14, c_nomcur: 'Gastroenterología' }
+    ],
+    'I-I1': [ // INGENIERÍA - SISTEMAS
+      { id: 15, c_nomcur: 'Programación Avanzada' },
+      { id: 16, c_nomcur: 'Base de Datos' },
+      { id: 17, c_nomcur: 'Ingeniería de Software' },
+      { id: 18, c_nomcur: 'Redes de Computadores' }
+    ],
+    'A-A1': [ // ADMINISTRACIÓN - ADMINISTRACIÓN
+      { id: 19, c_nomcur: 'Gestión Estratégica' },
+      { id: 20, c_nomcur: 'Marketing Digital' },
+      { id: 21, c_nomcur: 'Recursos Humanos' }
+    ]
   };
 
-  const handleCloseDialog = () => {
-    setOpenDialog(false);
-    setCurrentHorario({
-      dia_semana: '',
-      turno: '',
-      hora_inicio: '',
-      hora_fin: '',
-      es_disponible: true,
-      observaciones: ''
-    });
-  };
+  const diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
-  const handleSubmit = () => {
-    if (!currentHorario.dia_semana || !currentHorario.turno || 
-        !currentHorario.hora_inicio || !currentHorario.hora_fin) {
-      setAlert({ 
-        type: 'error', 
-        message: 'Día, turno, hora de inicio y hora de fin son obligatorios' 
-      });
-      return;
-    }
-
-    // Validar que hora de inicio sea menor que hora de fin
-    const inicio = new Date(`2024-01-01 ${currentHorario.hora_inicio}`);
-    const fin = new Date(`2024-01-01 ${currentHorario.hora_fin}`);
+  // Manejar cambio de facultad - REINICIA TODO
+  const handleFacultadChange = (nuevaFacultad) => {
+    setFacultadSeleccionada(nuevaFacultad);
+    setEspecialidadSeleccionada(''); // Reset especialidad
     
-    if (inicio >= fin) {
-      setAlert({ 
-        type: 'error', 
-        message: 'La hora de inicio debe ser menor que la hora de fin' 
-      });
-      return;
-    }
-
-    // Verificar solapamiento de horarios (solo para nuevo registro o edición que cambie día/horas)
-    const conflicto = horarios.some(h => {
-      if (editMode && h.id === currentHorario.id) return false; // Excluir el horario actual en edición
-      
-      if (h.dia_semana !== currentHorario.dia_semana) return false;
-      
-      const existeInicio = new Date(`2024-01-01 ${h.hora_inicio}`);
-      const existeFin = new Date(`2024-01-01 ${h.hora_fin}`);
-      
-      return (inicio < existeFin && fin > existeInicio);
+    // Limpiar horarios
+    setHorarios({
+      'Lunes': { activo: false, hora_inicio: '', hora_fin: '' },
+      'Martes': { activo: false, hora_inicio: '', hora_fin: '' },
+      'Miércoles': { activo: false, hora_inicio: '', hora_fin: '' },
+      'Jueves': { activo: false, hora_inicio: '', hora_fin: '' },
+      'Viernes': { activo: false, hora_inicio: '', hora_fin: '' },
+      'Sábado': { activo: false, hora_inicio: '', hora_fin: '' },
+      'Domingo': { activo: false, hora_inicio: '', hora_fin: '' }
     });
-
-    if (conflicto) {
-      setAlert({ 
-        type: 'error', 
-        message: 'Este horario se solapa con otro horario existente en el mismo día' 
-      });
-      return;
-    }
-
-    if (editMode) {
-      setHorarios(prev => prev.map(h => 
-        h.id === currentHorario.id ? currentHorario : h
-      ));
-      setAlert({ type: 'success', message: 'Horario actualizado correctamente' });
-    } else {
-      const newHorario = {
-        ...currentHorario,
-        id: Math.max(...horarios.map(h => h.id), 0) + 1,
-        fecha_registro: new Date().toISOString().split('T')[0]
-      };
-      setHorarios(prev => [...prev, newHorario]);
-      setAlert({ type: 'success', message: 'Horario agregado correctamente' });
-    }
     
-    handleCloseDialog();
-  };
-
-  const handleDelete = (id) => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar este horario?')) {
-      setHorarios(prev => prev.filter(h => h.id !== id));
-      setAlert({ type: 'success', message: 'Horario eliminado correctamente' });
-    }
-  };
-
-  const handleToggleDisponibilidad = (id) => {
-    setHorarios(prev => prev.map(h => 
-      h.id === id ? { ...h, es_disponible: !h.es_disponible } : h
-    ));
-    setAlert({ type: 'success', message: 'Disponibilidad actualizada' });
-  };
-
-  const formatFecha = (fecha) => {
-    return new Date(fecha).toLocaleDateString('es-ES', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+    // Limpiar cursos de interés
+    setCursosInteres([]);
+    
+    setAlert({ 
+      type: 'info', 
+      message: 'Facultad cambiada. Selecciona una especialidad y configura nuevamente.' 
     });
   };
 
-  const formatHora = (hora) => {
-    return hora.substring(0, 5); // Formato HH:MM
+  // Manejar cambio de especialidad - REINICIA horarios y cursos
+  const handleEspecialidadChange = (nuevaEspecialidad) => {
+    setEspecialidadSeleccionada(nuevaEspecialidad);
+    
+    // Limpiar horarios
+    setHorarios({
+      'Lunes': { activo: false, hora_inicio: '', hora_fin: '' },
+      'Martes': { activo: false, hora_inicio: '', hora_fin: '' },
+      'Miércoles': { activo: false, hora_inicio: '', hora_fin: '' },
+      'Jueves': { activo: false, hora_inicio: '', hora_fin: '' },
+      'Viernes': { activo: false, hora_inicio: '', hora_fin: '' },
+      'Sábado': { activo: false, hora_inicio: '', hora_fin: '' },
+      'Domingo': { activo: false, hora_inicio: '', hora_fin: '' }
+    });
+    
+    // Limpiar cursos de interés
+    setCursosInteres([]);
+    
+    setAlert({ 
+      type: 'info', 
+      message: 'Especialidad cambiada. Configura tus horarios y cursos de interés.' 
+    });
   };
 
-  const getTurnoColor = (turno) => {
-    switch (turno) {
-      case 'Mañana': return 'primary';
-      case 'Tarde': return 'warning';
-      case 'Noche': return 'secondary';
-      default: return 'default';
+  // Manejar selección/deselección de curso
+  const handleCursoToggle = (cursoId) => {
+    setCursosInteres(prev => {
+      if (prev.includes(cursoId)) {
+        // Quitar curso
+        const newList = prev.filter(id => id !== cursoId);
+        setAlert({ type: 'success', message: 'Curso eliminado de tus intereses' });
+        return newList;
+      } else {
+        // Agregar curso
+        const newList = [...prev, cursoId];
+        setAlert({ type: 'success', message: 'Curso agregado a tus intereses' });
+        return newList;
+      }
+    });
+  };
+
+  // Obtener curso por ID
+  const getCursoById = (id) => {
+    for (const key in cursosPorEspecialidad) {
+      const curso = cursosPorEspecialidad[key].find(c => c.id === id);
+      if (curso) return curso;
     }
+    return null;
   };
 
-  const getDiaColor = (dia) => {
-    const colores = {
-      'Lunes': 'error',
-      'Martes': 'warning', 
-      'Miércoles': 'success',
-      'Jueves': 'info',
-      'Viernes': 'primary',
-      'Sábado': 'secondary'
-    };
-    return colores[dia] || 'default';
+  // Obtener especialidades filtradas por facultad
+  const especialidadesFiltradas = facultadSeleccionada ? 
+    especialidadesPorFacultad[facultadSeleccionada] || [] : [];
+
+  // Obtener cursos de la especialidad seleccionada
+  const cursosDisponibles = facultadSeleccionada && especialidadSeleccionada ? 
+    cursosPorEspecialidad[`${facultadSeleccionada}-${especialidadSeleccionada}`] || [] : [];
+
+  // Manejar cambio de checkbox
+  const handleCheckboxChange = (dia) => {
+    setHorarios(prev => ({
+      ...prev,
+      [dia]: {
+        ...prev[dia],
+        activo: !prev[dia].activo,
+        // Si se desmarca, limpiar las horas
+        hora_inicio: !prev[dia].activo ? prev[dia].hora_inicio : '',
+        hora_fin: !prev[dia].activo ? prev[dia].hora_fin : ''
+      }
+    }));
   };
 
-  const calcularDuracion = (horaInicio, horaFin) => {
-    const inicio = new Date(`2024-01-01 ${horaInicio}`);
-    const fin = new Date(`2024-01-01 ${horaFin}`);
-    const horas = (fin - inicio) / (1000 * 60 * 60);
-    return `${horas}h`;
+  // Manejar cambio de horas
+  const handleTimeChange = (dia, campo, valor) => {
+    setHorarios(prev => ({
+      ...prev,
+      [dia]: {
+        ...prev[dia],
+        [campo]: valor
+      }
+    }));
+  };
+
+  // Guardar todos los horarios y cursos
+  const handleGuardar = () => {
+    if (!facultadSeleccionada || !especialidadSeleccionada) {
+      setAlert({ 
+        type: 'error', 
+        message: 'Debe seleccionar una facultad y especialidad primero' 
+      });
+      return;
+    }
+
+    const horariosActivos = [];
+    let errores = [];
+
+    // Validar cada día activo
+    Object.entries(horarios).forEach(([dia, data]) => {
+      if (data.activo) {
+        if (!data.hora_inicio || !data.hora_fin) {
+          errores.push(`${dia}: Debe completar hora de inicio y fin`);
+          return;
+        }
+
+        const inicio = new Date(`2024-01-01 ${data.hora_inicio}`);
+        const fin = new Date(`2024-01-01 ${data.hora_fin}`);
+
+        if (inicio >= fin) {
+          errores.push(`${dia}: La hora de inicio debe ser menor que la hora de fin`);
+          return;
+        }
+
+        horariosActivos.push({
+          dia_semana: dia,
+          hora_inicio: data.hora_inicio,
+          hora_fin: data.hora_fin
+        });
+      }
+    });
+
+    if (errores.length > 0) {
+      setAlert({ 
+        type: 'error', 
+        message: errores.join('. ') 
+      });
+      return;
+    }
+
+    if (horariosActivos.length === 0) {
+      setAlert({ 
+        type: 'error', 
+        message: 'Debe seleccionar al menos un día con horario disponible' 
+      });
+      return;
+    }
+
+    if (cursosInteres.length === 0) {
+      setAlert({ 
+        type: 'error', 
+        message: 'Debe seleccionar al menos un curso de interés' 
+      });
+      return;
+    }
+
+    // TODO: Aquí enviar datos al backend
+    const facultad = facultadesDisponibles.find(f => f.c_codfac === facultadSeleccionada);
+    const especialidad = especialidadesFiltradas.find(e => e.c_codesp === especialidadSeleccionada);
+    
+    console.log('Datos a guardar:', {
+      facultad: facultad,
+      especialidad: especialidad,
+      c_codfac: facultadSeleccionada,
+      c_codesp: especialidadSeleccionada,
+      horarios: horariosActivos,
+      cursos: cursosInteres
+    });
+    
+    setAlert({ 
+      type: 'success', 
+      message: `Configuración guardada para ${facultad?.nom_fac} - ${especialidad?.nomesp}: ${horariosActivos.length} días y ${cursosInteres.length} cursos seleccionados` 
+    });
   };
 
   return (
     <Box sx={{ p: 3 }}>
-      {/* Header con estadísticas */}
+      {/* Header */}
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', mb: 3 }}>
-          Mis Horarios Disponibles
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: 2, 
+          mb: 3,
+          pb: 2,
+          borderBottom: '2px solid #f0f0f0'
+        }}>
+          <ScheduleIcon color="primary" sx={{ fontSize: 40 }} />
+          <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+            📅 Configuración de Postulación
+          </Typography>
+        </Box>
+        <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+          Selecciona una especialidad y configura tus horarios disponibles y cursos de interés
         </Typography>
-        
-        <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={12} sm={6} md={3}>
-            <Card>
-              <CardContent sx={{ textAlign: 'center' }}>
-                <ScheduleIcon color="primary" sx={{ fontSize: 40, mb: 1 }} />
-                <Typography variant="h4" component="div">
-                  {estadisticas.total}
-                </Typography>
-                <Typography color="text.secondary">
-                  Total Horarios
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          
-          <Grid item xs={12} sm={6} md={3}>
-            <Card>
-              <CardContent sx={{ textAlign: 'center' }}>
-                <EventIcon color="success" sx={{ fontSize: 40, mb: 1 }} />
-                <Typography variant="h4" component="div">
-                  {estadisticas.disponibles}
-                </Typography>
-                <Typography color="text.secondary">
-                  Disponibles
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          
-          <Grid item xs={12} sm={6} md={3}>
-            <Card>
-              <CardContent sx={{ textAlign: 'center' }}>
-                <CalendarIcon color="warning" sx={{ fontSize: 40, mb: 1 }} />
-                <Typography variant="h4" component="div">
-                  {estadisticas.noDisponibles}
-                </Typography>
-                <Typography color="text.secondary">
-                  No Disponibles
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          
-          <Grid item xs={12} sm={6} md={3}>
-            <Card>
-              <CardContent sx={{ textAlign: 'center' }}>
-                <TimeIcon color="error" sx={{ fontSize: 40, mb: 1 }} />
-                <Typography variant="h4" component="div">
-                  {Math.round(estadisticas.horasSemanales)}
-                </Typography>
-                <Typography color="text.secondary">
-                  Horas Disponibles/Semana
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
       </Box>
 
       {alert && (
@@ -360,252 +340,296 @@ const HorariosPage = () => {
         </Alert>
       )}
 
-      {/* Tabla de horarios */}
-      <Card>
-        <CardContent>
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Día</TableCell>
-                  <TableCell>Turno</TableCell>
-                  <TableCell>Horario</TableCell>
-                  <TableCell>Duración</TableCell>
-                  <TableCell>Estado</TableCell>
-                  <TableCell>Observaciones</TableCell>
-                  <TableCell>Acciones</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {horarios.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} align="center">
-                      <Typography variant="body1" color="text.secondary">
-                        No tienes horarios registrados
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  horarios.map((horario) => (
-                    <TableRow key={horario.id}>
-                      <TableCell>
-                        <Chip 
-                          label={horario.dia_semana}
-                          color={getDiaColor(horario.dia_semana)}
-                          size="small"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Chip 
-                          label={horario.turno}
-                          color={getTurnoColor(horario.turno)}
-                          size="small"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" fontWeight="bold">
-                          {formatHora(horario.hora_inicio)} - {formatHora(horario.hora_fin)}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2">
-                          {calcularDuracion(horario.hora_inicio, horario.hora_fin)}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Switch
-                          checked={horario.es_disponible}
-                          onChange={() => handleToggleDisponibilidad(horario.id)}
-                          color="success"
-                          size="small"
-                        />
-                        <Typography variant="caption" display="block">
-                          {horario.es_disponible ? 'Disponible' : 'No disponible'}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography 
-                          variant="body2" 
-                          sx={{ 
-                            maxWidth: 200, 
-                            overflow: 'hidden', 
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap'
-                          }}
-                          title={horario.observaciones}
-                        >
-                          {horario.observaciones || 'Sin observaciones'}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <IconButton 
-                          size="small" 
-                          onClick={() => handleOpenDialog(horario)}
-                          color="primary"
-                        >
-                          <EditIcon />
-                        </IconButton>
-                        <IconButton 
-                          size="small" 
-                          onClick={() => handleDelete(horario.id)}
-                          color="error"
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
+      {/* Selección de Facultad y Especialidad */}
+      <Card elevation={3} sx={{ mb: 3 }}>
+        <CardContent sx={{ p: 3 }}>
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 2, 
+            mb: 3,
+            pb: 2,
+            borderBottom: '2px solid #f0f0f0'
+          }}>
+            <SchoolIcon color="primary" sx={{ fontSize: 32 }} />
+            <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+              �️ Seleccionar Facultad y Especialidad
+            </Typography>
+          </Box>
 
-          {/* Paginación */}
-          {horarios.length > 10 && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
-              <Pagination 
-                count={Math.ceil(horarios.length / 10)}
-                page={page}
-                onChange={(e, newPage) => setPage(newPage)}
-                color="primary"
-              />
-            </Box>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth>
+                <InputLabel>Facultad</InputLabel>
+                <Select
+                  value={facultadSeleccionada}
+                  label="Facultad"
+                  onChange={(e) => handleFacultadChange(e.target.value)}
+                >
+                  {facultadesDisponibles.map((facultad) => (
+                    <MenuItem key={facultad.c_codfac} value={facultad.c_codfac}>
+                      <Box>
+                        <Typography variant="subtitle2" fontWeight="bold">
+                          {facultad.nom_fac}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Código: {facultad.c_codfac}
+                        </Typography>
+                      </Box>
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth disabled={!facultadSeleccionada}>
+                <InputLabel>Especialidad</InputLabel>
+                <Select
+                  value={especialidadSeleccionada}
+                  label="Especialidad"
+                  onChange={(e) => handleEspecialidadChange(e.target.value)}
+                >
+                  {especialidadesFiltradas.map((especialidad) => (
+                    <MenuItem key={especialidad.c_codesp} value={especialidad.c_codesp}>
+                      <Box>
+                        <Typography variant="subtitle2" fontWeight="bold">
+                          {especialidad.nomesp}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Código: {especialidad.c_codesp}
+                        </Typography>
+                      </Box>
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+          </Grid>
+
+          {facultadSeleccionada && especialidadSeleccionada && (
+            <Alert severity="info" sx={{ mt: 2 }}>
+              <Typography variant="body2">
+                ⚠️ <strong>Importante:</strong> Al cambiar de facultad o especialidad se reiniciará toda la configuración. 
+                Solo puedes tener una postulación activa por especialidad.
+              </Typography>
+            </Alert>
           )}
         </CardContent>
       </Card>
 
-      {/* Botón flotante para agregar */}
-      <Fab 
-        color="primary" 
-        aria-label="add"
-        sx={{ 
-          position: 'fixed', 
-          bottom: 16, 
-          right: 16 
-        }}
-        onClick={() => handleOpenDialog()}
-      >
-        <AddIcon />
-      </Fab>
+      {facultadSeleccionada && especialidadSeleccionada && (
+        <Card elevation={3} sx={{ mb: 3 }}>
+          <CardContent sx={{ p: 3 }}>
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 2, 
+              mb: 3,
+              pb: 2,
+              borderBottom: '2px solid #f0f0f0'
+            }}>
+              <CategoryIcon color="primary" sx={{ fontSize: 32 }} />
+              <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+                📚 Cursos de Interés
+              </Typography>
+            </Box>
 
-      {/* Dialog para agregar/editar */}
-      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
-        <DialogTitle>
-          {editMode ? 'Editar Horario' : 'Agregar Nuevo Horario'}
-        </DialogTitle>
-        <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
-                <FormControl fullWidth required>
-                  <InputLabel>Día de la Semana</InputLabel>
-                  <Select
-                    value={currentHorario.dia_semana}
-                    label="Día de la Semana"
-                    onChange={(e) => setCurrentHorario({ 
-                      ...currentHorario, 
-                      dia_semana: e.target.value 
-                    })}
-                  >
-                    {diasSemana.map((dia) => (
-                      <MenuItem key={dia} value={dia}>
-                        {dia}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
+            {cursosDisponibles.length > 0 && (
+              <Box>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  Selecciona los cursos en los que te gustaría dictar clases:
+                </Typography>
+                <List dense>
+                  {cursosDisponibles.map((curso) => (
+                    <ListItem 
+                      key={curso.id} 
+                      sx={{ 
+                        pl: 0,
+                        py: 1,
+                        borderRadius: '6px',
+                        mb: 1,
+                        bgcolor: cursosInteres.includes(curso.id) ? '#e8f5e8' : 'transparent',
+                      }}
+                    >
+                      <Checkbox
+                        checked={cursosInteres.includes(curso.id)}
+                        onChange={() => handleCursoToggle(curso.id)}
+                        color="success"
+                        sx={{ mr: 1 }}
+                      />
+                      <ListItemText
+                        primary={
+                          <Typography variant="body2" fontWeight="medium">
+                            {curso.c_nomcur}
+                          </Typography>
+                        }
+                      />
+                    </ListItem>
+                  ))}
+                </List>
 
-              <Grid item xs={12} md={6}>
-                <FormControl fullWidth required>
-                  <InputLabel>Turno</InputLabel>
-                  <Select
-                    value={currentHorario.turno}
-                    label="Turno"
-                    onChange={(e) => setCurrentHorario({ 
-                      ...currentHorario, 
-                      turno: e.target.value 
-                    })}
-                  >
-                    {turnos.map((turno) => (
-                      <MenuItem key={turno} value={turno}>
-                        {turno}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <TextField
-                  type="time"
-                  label="Hora de Inicio"
-                  value={currentHorario.hora_inicio}
-                  onChange={(e) => setCurrentHorario({ 
-                    ...currentHorario, 
-                    hora_inicio: e.target.value 
-                  })}
-                  InputLabelProps={{ shrink: true }}
-                  required
-                  fullWidth
-                />
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <TextField
-                  type="time"
-                  label="Hora de Fin"
-                  value={currentHorario.hora_fin}
-                  onChange={(e) => setCurrentHorario({ 
-                    ...currentHorario, 
-                    hora_fin: e.target.value 
-                  })}
-                  InputLabelProps={{ shrink: true }}
-                  required
-                  fullWidth
-                />
-              </Grid>
-
-              <Grid item xs={12}>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={currentHorario.es_disponible}
-                      onChange={(e) => setCurrentHorario({ 
-                        ...currentHorario, 
-                        es_disponible: e.target.checked 
+                {cursosInteres.length > 0 && (
+                  <Box sx={{ mt: 3, pt: 2, borderTop: '1px solid #e0e0e0' }}>
+                    <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+                      ✅ Cursos Seleccionados:
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                      {cursosInteres.map((cursoId) => {
+                        const curso = getCursoById(cursoId);
+                        return curso ? (
+                          <Chip 
+                            key={cursoId}
+                            label={curso.c_nomcur}
+                            color="success"
+                            size="small"
+                            onDelete={() => handleCursoToggle(cursoId)}
+                          />
+                        ) : null;
                       })}
-                      color="success"
-                    />
-                  }
-                  label="Disponible para dictar clases"
-                />
-              </Grid>
+                    </Box>
+                  </Box>
+                )}
+              </Box>
+            )}
 
-              <Grid item xs={12}>
-                <TextField
-                  label="Observaciones"
-                  value={currentHorario.observaciones}
-                  onChange={(e) => setCurrentHorario({ 
-                    ...currentHorario, 
-                    observaciones: e.target.value 
-                  })}
-                  multiline
-                  rows={3}
-                  fullWidth
-                  placeholder="Agrega comentarios sobre este horario (ej: preferencias, limitaciones, etc.)"
-                />
-              </Grid>
+            {cursosDisponibles.length === 0 && (
+              <Alert severity="warning">
+                <Typography variant="body2">
+                  No hay cursos disponibles para esta especialidad.
+                </Typography>
+              </Alert>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Sección de Horarios Disponibles - AL FINAL */}
+      {facultadSeleccionada && especialidadSeleccionada && (
+        <Card elevation={3} sx={{ mb: 3 }}>
+          <CardContent sx={{ p: 3 }}>
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 2, 
+              mb: 3,
+              pb: 2,
+              borderBottom: '2px solid #f0f0f0'
+            }}>
+              <AccessTimeIcon color="primary" sx={{ fontSize: 32 }} />
+              <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+                ⏰ Horarios Disponibles
+              </Typography>
+            </Box>
+
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              Configura tu disponibilidad horaria para dictar clases:
+            </Typography>
+
+            <Grid container spacing={2}>
+              {diasSemana.map((dia) => (
+                <Grid item xs={12} sm={6} md={4} lg={3} key={dia}>
+                  <Card 
+                    variant="outlined" 
+                    sx={{ 
+                      bgcolor: horarios[dia].activo ? '#e8f5e8' : '#fafafa',
+                      borderColor: horarios[dia].activo ? 'success.main' : 'grey.300',
+                      borderWidth: horarios[dia].activo ? 2 : 1,
+                    }}
+                  >
+                    <CardContent sx={{ p: 2 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
+                          {dia.toUpperCase()}
+                        </Typography>
+                        <Chip 
+                          label={horarios[dia].activo ? "✓" : "✗"} 
+                          color={horarios[dia].activo ? "success" : "default"}
+                          size="small"
+                        />
+                      </Box>
+
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={horarios[dia].activo}
+                            onChange={() => handleCheckboxChange(dia)}
+                            color="success"
+                            size="small"
+                          />
+                        }
+                        label={
+                          <Typography variant="body2">
+                            Disponible
+                          </Typography>
+                        }
+                        sx={{ mb: 1 }}
+                      />
+
+                      {horarios[dia].activo && (
+                        <Box sx={{ mt: 1 }}>
+                          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                            <TextField
+                              type="time"
+                              value={horarios[dia].hora_inicio}
+                              onChange={(e) => handleTimeChange(dia, 'hora_inicio', e.target.value)}
+                              size="small"
+                              sx={{ flex: 1 }}
+                            />
+                            <Typography variant="caption">a</Typography>
+                            <TextField
+                              type="time"
+                              value={horarios[dia].hora_fin}
+                              onChange={(e) => handleTimeChange(dia, 'hora_fin', e.target.value)}
+                              size="small"
+                              sx={{ flex: 1 }}
+                            />
+                          </Box>
+                        </Box>
+                      )}
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
             </Grid>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialog}>Cancelar</Button>
-          <Button onClick={handleSubmit} variant="contained">
-            {editMode ? 'Actualizar' : 'Crear'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+          </CardContent>
+        </Card>
+      )}
+
+      {facultadSeleccionada && especialidadSeleccionada && (
+        <Box sx={{ mt: 4, textAlign: 'center' }}>
+          <Card elevation={3}>
+            <CardContent sx={{ p: 3 }}>
+              <Divider sx={{ mb: 3 }} />
+              <Button
+                variant="contained"
+                size="large"
+                onClick={handleGuardar}
+                startIcon={<ScheduleIcon />}
+                sx={{ 
+                  bgcolor: 'primary.main',
+                  color: 'white',
+                  fontWeight: 'bold',
+                  px: 6,
+                  py: 2,
+                  fontSize: '16px',
+                  borderRadius: '12px',
+                  textTransform: 'none',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                  '&:hover': {
+                    bgcolor: 'primary.dark',
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 6px 16px rgba(0,0,0,0.2)'
+                  },
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                GUARDAR
+              </Button>
+            </CardContent>
+          </Card>
+        </Box>
+      )}
     </Box>
   );
 };

@@ -105,12 +105,6 @@ const Layout = () => {
       description: 'Experiencias laborales'
     },
     {
-      text: 'Cursos de Interés',
-      icon: <FavoriteIcon />,
-      path: '/docente/cursos-interes',
-      description: 'Cursos que me interesan'
-    },
-    {
       text: 'Mis Horarios',
       icon: <ScheduleIcon />,
       path: '/docente/horarios',

@@ -27,11 +27,12 @@ import {
   FormControl,
   InputLabel,
   Select,
-  Stepper,
-  Step,
-  StepLabel,
-  LinearProgress,
-  Tooltip
+  Tooltip,
+  Divider,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -42,7 +43,10 @@ import {
   CheckCircle as ApprovedIcon,
   Cancel as RejectedIcon,
   Visibility as ViewIcon,
-  Description as DocumentIcon
+  Assessment as EvaluatingIcon,
+  Schedule as ScheduleIcon,
+  School as SchoolIcon,
+  AccessTime as AccessTimeIcon
 } from '@mui/icons-material';
 
 const PostulacionesPage = () => {
@@ -53,120 +57,141 @@ const PostulacionesPage = () => {
   const [page, setPage] = useState(1);
   const [selectedPostulacion, setSelectedPostulacion] = useState(null);
 
-  // DATOS MOCK - Tabla 'postulaciones_cursos_especialidad'
+  // DATOS MOCK - Tabla 'postulaciones_cursos_especialidad' CON HORARIOS Y CURSOS
   const [postulaciones, setPostulaciones] = useState([
     {
       id: 1,
-      convocatoria_id: 1,
-      convocatoria_titulo: 'Convocatoria Docentes Medicina 2024-I',
-      curso_id: 1,
-      curso_nombre: 'Cardiología Intervencional Avanzada',
-      especialidad_id: 1,
-      especialidad_nombre: 'Cardiología',
+      user_id: 1,
+      c_codfac: 'S',
+      c_codesp: 'S1',
+      facultad_nombre: 'CIENCIAS DE LA SALUD',
+      especialidad_nombre: 'ENFERMERÍA',
+      estado: 'EVALUANDO',
+      mensaje_entrevista: null,
+      evaluador_user_id: null,
       fecha_postulacion: '2024-02-01',
-      estado: 'En Evaluación',
-      puntaje_obtenido: null,
-      observaciones_evaluacion: null,
-      documentos_adjuntos: 'cv_actualizado.pdf, certificados_especialidad.pdf',
-      carta_motivacion: 'Estimados miembros del comité evaluador, me dirijo a ustedes para postularme al curso de Cardiología Intervencional Avanzada...',
-      fecha_limite: '2024-02-28'
+      // HORARIOS CONFIGURADOS (tabla docente_horarios)
+      horarios: [
+        { dia_semana: 'Lunes', hora_inicio: '08:00', hora_fin: '12:00' },
+        { dia_semana: 'Miércoles', hora_inicio: '14:00', hora_fin: '18:00' },
+        { dia_semana: 'Viernes', hora_inicio: '08:00', hora_fin: '12:00' }
+      ],
+      // CURSOS DE INTERÉS (relación con plan_estudio_curso)
+      cursos_interes: [
+        { id: 1, c_nomcur: 'Anatomía y Fisiología Humana' },
+        { id: 2, c_nomcur: 'Fundamentos de Enfermería' },
+        { id: 4, c_nomcur: 'Cuidados Intensivos' }
+      ]
     },
     {
       id: 2,
-      convocatoria_id: 1,
-      convocatoria_titulo: 'Convocatoria Docentes Medicina 2024-I',
-      curso_id: 2,
-      curso_nombre: 'Ecocardiografía Diagnóstica',
-      especialidad_id: 1,
-      especialidad_nombre: 'Cardiología',
+      user_id: 1,
+      c_codfac: 'M',
+      c_codesp: 'M1',
+      facultad_nombre: 'MEDICINA',
+      especialidad_nombre: 'CARDIOLOGÍA',
+      estado: 'APROBADO',
+      mensaje_entrevista: 'Felicitaciones! Has sido seleccionado para dictar en la especialidad de Cardiología. Te contactaremos pronto para coordinar la entrevista final.',
+      evaluador_user_id: 3,
       fecha_postulacion: '2024-01-28',
-      estado: 'Aprobado',
-      puntaje_obtenido: 87,
-      observaciones_evaluacion: 'Excelente perfil profesional. Experiencia comprobada en ecocardiografía. Recomendado para la cátedra.',
-      documentos_adjuntos: 'cv_actualizado.pdf, certificados_especialidad.pdf, carta_recomendacion.pdf',
-      carta_motivacion: 'Mi experiencia de 8 años en ecocardiografía diagnóstica me permite aportar conocimientos actualizados...',
-      fecha_limite: '2024-02-28'
+      horarios: [
+        { dia_semana: 'Martes', hora_inicio: '08:00', hora_fin: '12:00' },
+        { dia_semana: 'Jueves', hora_inicio: '14:00', hora_fin: '18:00' },
+        { dia_semana: 'Sábado', hora_inicio: '08:00', hora_fin: '12:00' }
+      ],
+      cursos_interes: [
+        { id: 8, c_nomcur: 'Cardiología Intervencional Avanzada' },
+        { id: 9, c_nomcur: 'Ecocardiografía Diagnóstica' },
+        { id: 11, c_nomcur: 'Urgencias Cardiológicas' }
+      ]
     },
     {
       id: 3,
-      convocatoria_id: 2,
-      convocatoria_titulo: 'Convocatoria Medicina Interna 2024-I',
-      curso_id: 3,
-      curso_nombre: 'Medicina Interna General',
-      especialidad_id: 2,
-      especialidad_nombre: 'Medicina Interna',
+      user_id: 1,
+      c_codfac: 'I',
+      c_codesp: 'I1',
+      facultad_nombre: 'INGENIERÍA',
+      especialidad_nombre: 'SISTEMAS',
+      estado: 'RECHAZADO',
+      mensaje_entrevista: null,
+      evaluador_user_id: 4,
       fecha_postulacion: '2024-01-15',
-      estado: 'Rechazado',
-      puntaje_obtenido: 65,
-      observaciones_evaluacion: 'Perfil adecuado pero se requiere mayor experiencia docente universitaria.',
-      documentos_adjuntos: 'cv_actualizado.pdf',
-      carta_motivacion: 'Aunque mi especialidad es cardiología, tengo bases sólidas en medicina interna...',
-      fecha_limite: '2024-01-31'
+      horarios: [
+        { dia_semana: 'Lunes', hora_inicio: '18:00', hora_fin: '22:00' },
+        { dia_semana: 'Miércoles', hora_inicio: '18:00', hora_fin: '22:00' }
+      ],
+      cursos_interes: [
+        { id: 15, c_nomcur: 'Programación Avanzada' },
+        { id: 16, c_nomcur: 'Base de Datos' }
+      ]
     },
     {
       id: 4,
-      convocatoria_id: 3,
-      convocatoria_titulo: 'Convocatoria Postgrado Cardiología 2024-II',
-      curso_id: 4,
-      curso_nombre: 'Investigación Clínica en Cardiología',
-      especialidad_id: 1,
-      especialidad_nombre: 'Cardiología',
+      user_id: 1,
+      c_codfac: 'A',
+      c_codesp: 'A1',
+      facultad_nombre: 'ADMINISTRACIÓN',
+      especialidad_nombre: 'ADMINISTRACIÓN',
+      estado: 'PENDIENTE',
+      mensaje_entrevista: null,
+      evaluador_user_id: null,
       fecha_postulacion: '2024-03-01',
-      estado: 'Pendiente',
-      puntaje_obtenido: null,
-      observaciones_evaluacion: null,
-      documentos_adjuntos: 'cv_actualizado.pdf, proyecto_investigacion.pdf',
-      carta_motivacion: 'Mi interés en la investigación clínica cardiovascular se fundamenta en...',
-      fecha_limite: '2024-03-31'
+      horarios: [
+        { dia_semana: 'Lunes', hora_inicio: '14:00', hora_fin: '18:00' },
+        { dia_semana: 'Martes', hora_inicio: '14:00', hora_fin: '18:00' },
+        { dia_semana: 'Miércoles', hora_inicio: '14:00', hora_fin: '18:00' },
+        { dia_semana: 'Jueves', hora_inicio: '14:00', hora_fin: '18:00' },
+        { dia_semana: 'Viernes', hora_inicio: '14:00', hora_fin: '18:00' }
+      ],
+      cursos_interes: [
+        { id: 19, c_nomcur: 'Gestión Estratégica' },
+        { id: 20, c_nomcur: 'Marketing Digital' },
+        { id: 21, c_nomcur: 'Recursos Humanos' }
+      ]
     }
   ]);
 
-  // Datos mock de convocatorias y cursos disponibles
-  const convocatoriasDisponibles = [
-    { id: 1, titulo: 'Convocatoria Docentes Medicina 2024-I', fecha_limite: '2024-02-28', estado: 'Abierta' },
-    { id: 2, titulo: 'Convocatoria Medicina Interna 2024-I', fecha_limite: '2024-01-31', estado: 'Cerrada' },
-    { id: 3, titulo: 'Convocatoria Postgrado Cardiología 2024-II', fecha_limite: '2024-03-31', estado: 'Abierta' },
-    { id: 4, titulo: 'Convocatoria Cirugía General 2024-I', fecha_limite: '2024-04-15', estado: 'Próximamente' }
+  // Datos mock de facultades y especialidades disponibles
+  const facultadesDisponibles = [
+    { c_codfac: 'S', nom_fac: 'CIENCIAS DE LA SALUD' },
+    { c_codfac: 'M', nom_fac: 'MEDICINA' },
+    { c_codfac: 'I', nom_fac: 'INGENIERÍA' },
+    { c_codfac: 'A', nom_fac: 'ADMINISTRACIÓN' }
   ];
 
-  const cursosDisponibles = [
-    { id: 1, nombre: 'Cardiología Intervencional Avanzada', especialidad: 'Cardiología' },
-    { id: 2, nombre: 'Ecocardiografía Diagnóstica', especialidad: 'Cardiología' },
-    { id: 3, nombre: 'Medicina Interna General', especialidad: 'Medicina Interna' },
-    { id: 4, nombre: 'Investigación Clínica en Cardiología', especialidad: 'Cardiología' }
+  const especialidadesDisponibles = [
+    { c_codfac: 'S', c_codesp: 'S1', nomesp: 'ENFERMERÍA' },
+    { c_codfac: 'M', c_codesp: 'M1', nomesp: 'CARDIOLOGÍA' },
+    { c_codfac: 'M', c_codesp: 'M2', nomesp: 'MEDICINA INTERNA' },
+    { c_codfac: 'I', c_codesp: 'I1', nomesp: 'SISTEMAS' },
+    { c_codfac: 'I', c_codesp: 'I2', nomesp: 'INDUSTRIAL' },
+    { c_codfac: 'A', c_codesp: 'A1', nomesp: 'ADMINISTRACIÓN' }
   ];
 
   const [currentPostulacion, setCurrentPostulacion] = useState({
-    convocatoria_id: '',
-    curso_id: '',
-    especialidad_id: '',
-    carta_motivacion: '',
-    documentos_adjuntos: ''
+    c_codfac: '',
+    c_codesp: ''
   });
 
-  const estados = ['Pendiente', 'En Evaluación', 'Aprobado', 'Rechazado'];
+  const estados = ['PENDIENTE', 'EVALUANDO', 'APROBADO', 'RECHAZADO'];
   
-  // Estadísticas calculadas
-  const estadisticas = {
-    total: postulaciones.length,
-    pendientes: postulaciones.filter(p => p.estado === 'Pendiente' || p.estado === 'En Evaluación').length,
-    aprobadas: postulaciones.filter(p => p.estado === 'Aprobado').length,
-    rechazadas: postulaciones.filter(p => p.estado === 'Rechazado').length
-  };
+  // Filtrar especialidades por facultad seleccionada
+  const especialidadesFiltradas = especialidadesDisponibles.filter(
+    esp => esp.c_codfac === currentPostulacion.c_codfac
+  );
 
   const handleOpenDialog = (postulacion = null) => {
     if (postulacion) {
       setCurrentPostulacion({
-        ...postulacion
+        id: postulacion.id,
+        c_codfac: postulacion.c_codfac,
+        c_codesp: postulacion.c_codesp
       });
       setEditMode(true);
     } else {
       setCurrentPostulacion({
-        convocatoria_id: '',
-        curso_id: '',
-        especialidad_id: '',
-        carta_motivacion: '',
-        documentos_adjuntos: ''
+        c_codfac: '',
+        c_codesp: ''
       });
       setEditMode(false);
     }
@@ -176,11 +201,8 @@ const PostulacionesPage = () => {
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setCurrentPostulacion({
-      convocatoria_id: '',
-      curso_id: '',
-      especialidad_id: '',
-      carta_motivacion: '',
-      documentos_adjuntos: ''
+      c_codfac: '',
+      c_codesp: ''
     });
   };
 
@@ -190,46 +212,54 @@ const PostulacionesPage = () => {
   };
 
   const handleSubmit = () => {
-    if (!currentPostulacion.convocatoria_id || !currentPostulacion.curso_id || !currentPostulacion.carta_motivacion) {
+    if (!currentPostulacion.c_codfac || !currentPostulacion.c_codesp) {
       setAlert({ 
         type: 'error', 
-        message: 'Convocatoria, curso y carta de motivación son obligatorios' 
+        message: 'Facultad y especialidad son obligatorios' 
       });
       return;
     }
 
-    // Verificar si ya existe postulación para esta convocatoria y curso
+    // Verificar si ya existe postulación para esta facultad y especialidad
     if (!editMode && postulaciones.some(p => 
-      p.convocatoria_id == currentPostulacion.convocatoria_id && 
-      p.curso_id == currentPostulacion.curso_id
+      p.c_codfac === currentPostulacion.c_codfac && 
+      p.c_codesp === currentPostulacion.c_codesp
     )) {
       setAlert({ 
         type: 'error', 
-        message: 'Ya tienes una postulación para este curso en esta convocatoria' 
+        message: 'Ya tienes una postulación para esta especialidad' 
       });
       return;
     }
 
     if (editMode) {
       setPostulaciones(prev => prev.map(p => 
-        p.id === currentPostulacion.id ? currentPostulacion : p
+        p.id === currentPostulacion.id ? {
+          ...p,
+          c_codfac: currentPostulacion.c_codfac,
+          c_codesp: currentPostulacion.c_codesp,
+          facultad_nombre: facultadesDisponibles.find(f => f.c_codfac === currentPostulacion.c_codfac)?.nom_fac || '',
+          especialidad_nombre: especialidadesDisponibles.find(e => e.c_codesp === currentPostulacion.c_codesp)?.nomesp || ''
+        } : p
       ));
       setAlert({ type: 'success', message: 'Postulación actualizada correctamente' });
     } else {
-      const convocatoria = convocatoriasDisponibles.find(c => c.id == currentPostulacion.convocatoria_id);
-      const curso = cursosDisponibles.find(c => c.id == currentPostulacion.curso_id);
+      const facultad = facultadesDisponibles.find(f => f.c_codfac === currentPostulacion.c_codfac);
+      const especialidad = especialidadesDisponibles.find(e => 
+        e.c_codfac === currentPostulacion.c_codfac && e.c_codesp === currentPostulacion.c_codesp
+      );
       
       const newPostulacion = {
-        ...currentPostulacion,
         id: Math.max(...postulaciones.map(p => p.id), 0) + 1,
-        convocatoria_titulo: convocatoria?.titulo || '',
-        curso_nombre: curso?.nombre || '',
-        especialidad_nombre: curso?.especialidad || '',
-        fecha_postulacion: new Date().toISOString().split('T')[0],
-        estado: 'Pendiente',
-        puntaje_obtenido: null,
-        observaciones_evaluacion: null,
-        fecha_limite: convocatoria?.fecha_limite || ''
+        user_id: 1, // ID del usuario logueado
+        c_codfac: currentPostulacion.c_codfac,
+        c_codesp: currentPostulacion.c_codesp,
+        facultad_nombre: facultad?.nom_fac || '',
+        especialidad_nombre: especialidad?.nomesp || '',
+        estado: 'PENDIENTE',
+        mensaje_entrevista: null,
+        evaluador_user_id: null,
+        fecha_postulacion: new Date().toISOString().split('T')[0]
       };
       setPostulaciones(prev => [...prev, newPostulacion]);
       setAlert({ type: 'success', message: 'Postulación enviada correctamente' });
@@ -241,7 +271,7 @@ const PostulacionesPage = () => {
   const handleDelete = (id) => {
     const postulacion = postulaciones.find(p => p.id === id);
     
-    if (postulacion && (postulacion.estado === 'Aprobado' || postulacion.estado === 'En Evaluación')) {
+    if (postulacion && (postulacion.estado === 'APROBADO' || postulacion.estado === 'EVALUANDO')) {
       setAlert({ 
         type: 'error', 
         message: 'No puedes eliminar una postulación que está siendo evaluada o ya fue aprobada' 
@@ -265,99 +295,44 @@ const PostulacionesPage = () => {
 
   const getEstadoColor = (estado) => {
     switch (estado) {
-      case 'Aprobado': return 'success';
-      case 'Rechazado': return 'error';
-      case 'En Evaluación': return 'warning';
-      case 'Pendiente': return 'info';
+      case 'APROBADO': return 'success';
+      case 'RECHAZADO': return 'error';
+      case 'EVALUANDO': return 'warning';
+      case 'PENDIENTE': return 'info';
       default: return 'default';
     }
   };
 
   const getEstadoIcon = (estado) => {
     switch (estado) {
-      case 'Aprobado': return <ApprovedIcon />;
-      case 'Rechazado': return <RejectedIcon />;
-      case 'En Evaluación': return <PendingIcon />;
-      case 'Pendiente': return <AssignmentIcon />;
+      case 'APROBADO': return <ApprovedIcon />;
+      case 'RECHAZADO': return <RejectedIcon />;
+      case 'EVALUANDO': return <EvaluatingIcon />;
+      case 'PENDIENTE': return <PendingIcon />;
       default: return <AssignmentIcon />;
-    }
-  };
-
-  const getProgresoEstado = (estado) => {
-    switch (estado) {
-      case 'Pendiente': return 25;
-      case 'En Evaluación': return 50;
-      case 'Aprobado': return 100;
-      case 'Rechazado': return 100;
-      default: return 0;
     }
   };
 
   return (
     <Box sx={{ p: 3 }}>
-      {/* Header con estadísticas */}
+      {/* Header */}
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', mb: 3 }}>
-          Mis Postulaciones
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: 2, 
+          mb: 3,
+          pb: 2,
+          borderBottom: '2px solid #f0f0f0'
+        }}>
+          <AssignmentIcon color="primary" sx={{ fontSize: 40 }} />
+          <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+            📋 Mis Postulaciones
+          </Typography>
+        </Box>
+        <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+          Gestiona tus postulaciones a especialidades docentes
         </Typography>
-        
-        <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={12} sm={6} md={3}>
-            <Card>
-              <CardContent sx={{ textAlign: 'center' }}>
-                <AssignmentIcon color="primary" sx={{ fontSize: 40, mb: 1 }} />
-                <Typography variant="h4" component="div">
-                  {estadisticas.total}
-                </Typography>
-                <Typography color="text.secondary">
-                  Total Postulaciones
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          
-          <Grid item xs={12} sm={6} md={3}>
-            <Card>
-              <CardContent sx={{ textAlign: 'center' }}>
-                <PendingIcon color="warning" sx={{ fontSize: 40, mb: 1 }} />
-                <Typography variant="h4" component="div">
-                  {estadisticas.pendientes}
-                </Typography>
-                <Typography color="text.secondary">
-                  En Proceso
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          
-          <Grid item xs={12} sm={6} md={3}>
-            <Card>
-              <CardContent sx={{ textAlign: 'center' }}>
-                <ApprovedIcon color="success" sx={{ fontSize: 40, mb: 1 }} />
-                <Typography variant="h4" component="div">
-                  {estadisticas.aprobadas}
-                </Typography>
-                <Typography color="text.secondary">
-                  Aprobadas
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          
-          <Grid item xs={12} sm={6} md={3}>
-            <Card>
-              <CardContent sx={{ textAlign: 'center' }}>
-                <RejectedIcon color="error" sx={{ fontSize: 40, mb: 1 }} />
-                <Typography variant="h4" component="div">
-                  {estadisticas.rechazadas}
-                </Typography>
-                <Typography color="text.secondary">
-                  Rechazadas
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
       </Box>
 
       {alert && (
@@ -371,29 +346,50 @@ const PostulacionesPage = () => {
       )}
 
       {/* Tabla de postulaciones */}
-      <Card>
-        <CardContent>
+      <Card elevation={3}>
+        <CardContent sx={{ p: 3 }}>
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 2, 
+            mb: 3,
+            pb: 2,
+            borderBottom: '2px solid #f0f0f0'
+          }}>
+            <AssignmentIcon color="primary" sx={{ fontSize: 32 }} />
+            <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+              📋 Lista de Postulaciones
+            </Typography>
+          </Box>
+
           <TableContainer component={Paper}>
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Convocatoria</TableCell>
-                  <TableCell>Curso</TableCell>
+                  <TableCell>Facultad</TableCell>
                   <TableCell>Especialidad</TableCell>
                   <TableCell>Fecha Postulación</TableCell>
                   <TableCell>Estado</TableCell>
-                  <TableCell>Progreso</TableCell>
-                  <TableCell>Puntaje</TableCell>
                   <TableCell>Acciones</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {postulaciones.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} align="center">
-                      <Typography variant="body1" color="text.secondary">
-                        No tienes postulaciones registradas
-                      </Typography>
+                    <TableCell colSpan={5} align="center">
+                      <Box sx={{ 
+                        textAlign: 'center', 
+                        py: 4,
+                        color: 'text.secondary'
+                      }}>
+                        <AssignmentIcon sx={{ fontSize: 48, mb: 2, opacity: 0.3 }} />
+                        <Typography variant="body1" fontWeight="medium">
+                          No tienes postulaciones registradas
+                        </Typography>
+                        <Typography variant="body2">
+                          Haz clic en el botón + para crear tu primera postulación
+                        </Typography>
+                      </Box>
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -401,22 +397,24 @@ const PostulacionesPage = () => {
                     <TableRow key={postulacion.id}>
                       <TableCell>
                         <Typography variant="subtitle2" fontWeight="bold">
-                          {postulacion.convocatoria_titulo}
+                          {postulacion.facultad_nombre}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          Límite: {formatFecha(postulacion.fecha_limite)}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2">
-                          {postulacion.curso_nombre}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
                         <Chip 
-                          label={postulacion.especialidad_nombre}
-                          color="primary"
+                          label={postulacion.c_codfac}
                           size="small"
+                          color="primary"
+                          variant="outlined"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" fontWeight="medium">
+                          {postulacion.especialidad_nombre}
+                        </Typography>
+                        <Chip 
+                          label={postulacion.c_codesp}
+                          size="small"
+                          color="secondary"
+                          variant="outlined"
                         />
                       </TableCell>
                       <TableCell>{formatFecha(postulacion.fecha_postulacion)}</TableCell>
@@ -429,29 +427,6 @@ const PostulacionesPage = () => {
                         />
                       </TableCell>
                       <TableCell>
-                        <Box sx={{ width: '100%', mr: 1 }}>
-                          <LinearProgress 
-                            variant="determinate" 
-                            value={getProgresoEstado(postulacion.estado)}
-                            color={getEstadoColor(postulacion.estado)}
-                          />
-                        </Box>
-                        <Typography variant="caption">
-                          {getProgresoEstado(postulacion.estado)}%
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        {postulacion.puntaje_obtenido ? (
-                          <Typography variant="body2" fontWeight="bold" color="primary">
-                            {postulacion.puntaje_obtenido}/100
-                          </Typography>
-                        ) : (
-                          <Typography variant="body2" color="text.secondary">
-                            Pendiente
-                          </Typography>
-                        )}
-                      </TableCell>
-                      <TableCell>
                         <Tooltip title="Ver Detalles">
                           <IconButton 
                             size="small" 
@@ -461,30 +436,6 @@ const PostulacionesPage = () => {
                             <ViewIcon />
                           </IconButton>
                         </Tooltip>
-                        
-                        {(postulacion.estado === 'Pendiente' || postulacion.estado === 'Rechazado') && (
-                          <Tooltip title="Editar">
-                            <IconButton 
-                              size="small" 
-                              onClick={() => handleOpenDialog(postulacion)}
-                              color="primary"
-                            >
-                              <EditIcon />
-                            </IconButton>
-                          </Tooltip>
-                        )}
-                        
-                        {postulacion.estado === 'Pendiente' && (
-                          <Tooltip title="Eliminar">
-                            <IconButton 
-                              size="small" 
-                              onClick={() => handleDelete(postulacion.id)}
-                              color="error"
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          </Tooltip>
-                        )}
                       </TableCell>
                     </TableRow>
                   ))
@@ -507,46 +458,37 @@ const PostulacionesPage = () => {
         </CardContent>
       </Card>
 
-      {/* Botón flotante para agregar */}
-      <Fab 
-        color="primary" 
-        aria-label="add"
-        sx={{ 
-          position: 'fixed', 
-          bottom: 16, 
-          right: 16 
-        }}
-        onClick={() => handleOpenDialog()}
-      >
-        <AddIcon />
-      </Fab>
-
       {/* Dialog para agregar/editar postulación */}
-      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="lg" fullWidth>
+      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
         <DialogTitle>
-          {editMode ? 'Editar Postulación' : 'Nueva Postulación'}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <AssignmentIcon color="primary" />
+            <Typography variant="h6">
+              {editMode ? '✏️ Editar Postulación' : '➕ Nueva Postulación'}
+            </Typography>
+          </Box>
         </DialogTitle>
         <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
-            <Grid container spacing={2}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: 2 }}>
+            <Grid container spacing={3}>
               <Grid item xs={12} md={6}>
                 <FormControl fullWidth required>
-                  <InputLabel>Convocatoria</InputLabel>
+                  <InputLabel>Facultad</InputLabel>
                   <Select
-                    value={currentPostulacion.convocatoria_id}
-                    label="Convocatoria"
+                    value={currentPostulacion.c_codfac}
+                    label="Facultad"
                     onChange={(e) => setCurrentPostulacion({ 
                       ...currentPostulacion, 
-                      convocatoria_id: e.target.value 
+                      c_codfac: e.target.value,
+                      c_codesp: '' // Reset especialidad cuando cambia facultad
                     })}
-                    disabled={editMode}
                   >
-                    {convocatoriasDisponibles.filter(c => c.estado === 'Abierta').map((conv) => (
-                      <MenuItem key={conv.id} value={conv.id}>
+                    {facultadesDisponibles.map((facultad) => (
+                      <MenuItem key={facultad.c_codfac} value={facultad.c_codfac}>
                         <Box>
-                          <Typography variant="subtitle2">{conv.titulo}</Typography>
+                          <Typography variant="subtitle2">{facultad.nom_fac}</Typography>
                           <Typography variant="caption" color="text.secondary">
-                            Límite: {formatFecha(conv.fecha_limite)}
+                            Código: {facultad.c_codfac}
                           </Typography>
                         </Box>
                       </MenuItem>
@@ -556,23 +498,22 @@ const PostulacionesPage = () => {
               </Grid>
 
               <Grid item xs={12} md={6}>
-                <FormControl fullWidth required>
-                  <InputLabel>Curso</InputLabel>
+                <FormControl fullWidth required disabled={!currentPostulacion.c_codfac}>
+                  <InputLabel>Especialidad</InputLabel>
                   <Select
-                    value={currentPostulacion.curso_id}
-                    label="Curso"
+                    value={currentPostulacion.c_codesp}
+                    label="Especialidad"
                     onChange={(e) => setCurrentPostulacion({ 
                       ...currentPostulacion, 
-                      curso_id: e.target.value 
+                      c_codesp: e.target.value 
                     })}
-                    disabled={editMode}
                   >
-                    {cursosDisponibles.map((curso) => (
-                      <MenuItem key={curso.id} value={curso.id}>
+                    {especialidadesFiltradas.map((especialidad) => (
+                      <MenuItem key={especialidad.c_codesp} value={especialidad.c_codesp}>
                         <Box>
-                          <Typography variant="subtitle2">{curso.nombre}</Typography>
+                          <Typography variant="subtitle2">{especialidad.nomesp}</Typography>
                           <Typography variant="caption" color="text.secondary">
-                            {curso.especialidad}
+                            Código: {especialidad.c_codesp}
                           </Typography>
                         </Box>
                       </MenuItem>
@@ -582,66 +523,59 @@ const PostulacionesPage = () => {
               </Grid>
 
               <Grid item xs={12}>
-                <TextField
-                  label="Carta de Motivación"
-                  value={currentPostulacion.carta_motivacion}
-                  onChange={(e) => setCurrentPostulacion({ 
-                    ...currentPostulacion, 
-                    carta_motivacion: e.target.value 
-                  })}
-                  multiline
-                  rows={6}
-                  required
-                  fullWidth
-                  placeholder="Explica por qué estás interesado en este curso, tu experiencia relevante y qué puedes aportar..."
-                  helperText="Esta carta será evaluada por el comité de selección"
-                />
-              </Grid>
-
-              <Grid item xs={12}>
-                <TextField
-                  label="Documentos Adjuntos"
-                  value={currentPostulacion.documentos_adjuntos}
-                  onChange={(e) => setCurrentPostulacion({ 
-                    ...currentPostulacion, 
-                    documentos_adjuntos: e.target.value 
-                  })}
-                  fullWidth
-                  placeholder="Lista los documentos que adjuntas (CV, certificados, cartas de recomendación, etc.)"
-                  helperText="Puedes subir los documentos desde tu perfil"
-                />
+                <Alert severity="info" sx={{ mt: 2 }}>
+                  <Typography variant="body2">
+                    📋 <strong>Importante:</strong> Solo puedes tener una postulación activa por especialidad. 
+                    Tu postulación será revisada por el director de la especialidad seleccionada.
+                  </Typography>
+                </Alert>
               </Grid>
             </Grid>
           </Box>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialog}>Cancelar</Button>
-          <Button onClick={handleSubmit} variant="contained">
-            {editMode ? 'Actualizar' : 'Enviar Postulación'}
+        <DialogActions sx={{ p: 3 }}>
+          <Button onClick={handleCloseDialog} variant="outlined">
+            Cancelar
+          </Button>
+          <Button 
+            onClick={handleSubmit} 
+            variant="contained" 
+            startIcon={editMode ? <EditIcon /> : <AddIcon />}
+          >
+            {editMode ? 'Actualizar Postulación' : 'Enviar Postulación'}
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Dialog para ver detalles de postulación */}
-      <Dialog open={openViewDialog} onClose={() => setOpenViewDialog(false)} maxWidth="md" fullWidth>
+      <Dialog open={openViewDialog} onClose={() => setOpenViewDialog(false)} maxWidth="lg" fullWidth>
         <DialogTitle>
-          Detalles de Postulación
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <ViewIcon color="info" />
+            <Typography variant="h6">
+              👁️ Detalles de Postulación Completa
+            </Typography>
+          </Box>
         </DialogTitle>
         <DialogContent>
           {selectedPostulacion && (
-            <Box sx={{ pt: 1 }}>
-              <Grid container spacing={2}>
+            <Box sx={{ pt: 2 }}>
+              <Grid container spacing={3}>
+                {/* INFORMACIÓN GENERAL */}
                 <Grid item xs={12}>
-                  <Typography variant="h6" gutterBottom>
-                    {selectedPostulacion.curso_nombre}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    {selectedPostulacion.convocatoria_titulo}
-                  </Typography>
+                  <Card variant="outlined" sx={{ p: 2, bgcolor: 'primary.light', color: 'primary.contrastText' }}>
+                    <Typography variant="h6" gutterBottom>
+                      📚 {selectedPostulacion.facultad_nombre}
+                    </Typography>
+                    <Typography variant="subtitle1">
+                      🎓 {selectedPostulacion.especialidad_nombre}
+                    </Typography>
+                  </Card>
                 </Grid>
 
+                {/* ESTADO Y FECHA */}
                 <Grid item xs={12} md={6}>
-                  <Typography variant="subtitle2">Estado:</Typography>
+                  <Typography variant="subtitle2" color="text.secondary">Estado:</Typography>
                   <Chip 
                     icon={getEstadoIcon(selectedPostulacion.estado)}
                     label={selectedPostulacion.estado}
@@ -651,49 +585,156 @@ const PostulacionesPage = () => {
                 </Grid>
 
                 <Grid item xs={12} md={6}>
-                  <Typography variant="subtitle2">Fecha de Postulación:</Typography>
-                  <Typography variant="body2">
-                    {formatFecha(selectedPostulacion.fecha_postulacion)}
+                  <Typography variant="subtitle2" color="text.secondary">Fecha de Postulación:</Typography>
+                  <Typography variant="body1" sx={{ mt: 1 }}>
+                    📅 {formatFecha(selectedPostulacion.fecha_postulacion)}
                   </Typography>
                 </Grid>
 
-                {selectedPostulacion.puntaje_obtenido && (
-                  <Grid item xs={12} md={6}>
-                    <Typography variant="subtitle2">Puntaje Obtenido:</Typography>
-                    <Typography variant="h6" color="primary">
-                      {selectedPostulacion.puntaje_obtenido}/100
-                    </Typography>
-                  </Grid>
-                )}
+                {/* CÓDIGOS */}
+                <Grid item xs={12} md={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Código Facultad:</Typography>
+                  <Chip 
+                    label={selectedPostulacion.c_codfac}
+                    color="primary"
+                    size="small"
+                    sx={{ mt: 1 }}
+                  />
+                </Grid>
 
+                <Grid item xs={12} md={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Código Especialidad:</Typography>
+                  <Chip 
+                    label={selectedPostulacion.c_codesp}
+                    color="secondary"
+                    size="small"
+                    sx={{ mt: 1 }}
+                  />
+                </Grid>
+
+                {/* SEPARADOR */}
                 <Grid item xs={12}>
-                  <Typography variant="subtitle2">Carta de Motivación:</Typography>
-                  <Typography variant="body2" sx={{ mt: 1, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-                    {selectedPostulacion.carta_motivacion}
-                  </Typography>
+                  <Divider sx={{ my: 2 }} />
                 </Grid>
 
-                {selectedPostulacion.observaciones_evaluacion && (
+                {/* CURSOS DE INTERÉS */}
+                <Grid item xs={12} md={6}>
+                  <Card elevation={2} sx={{ p: 2, height: '100%' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                      <SchoolIcon color="success" />
+                      <Typography variant="h6" color="success.main">
+                        📚 Cursos de Interés
+                      </Typography>
+                    </Box>
+                    
+                    {selectedPostulacion.cursos_interes && selectedPostulacion.cursos_interes.length > 0 ? (
+                      <List dense>
+                        {selectedPostulacion.cursos_interes.map((curso, index) => (
+                          <ListItem key={index} sx={{ pl: 0 }}>
+                            <ListItemIcon>
+                              <Chip 
+                                label={index + 1} 
+                                size="small" 
+                                color="success" 
+                                sx={{ width: 24, height: 24, fontSize: '0.7rem' }}
+                              />
+                            </ListItemIcon>
+                            <ListItemText
+                              primary={
+                                <Typography variant="body2" fontWeight="medium">
+                                  {curso.c_nomcur}
+                                </Typography>
+                              }
+                            />
+                          </ListItem>
+                        ))}
+                      </List>
+                    ) : (
+                      <Alert severity="warning" sx={{ mt: 1 }}>
+                        <Typography variant="body2">
+                          No hay cursos de interés registrados
+                        </Typography>
+                      </Alert>
+                    )}
+                  </Card>
+                </Grid>
+
+                {/* HORARIOS DISPONIBLES */}
+                <Grid item xs={12} md={6}>
+                  <Card elevation={2} sx={{ p: 2, height: '100%' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                      <AccessTimeIcon color="info" />
+                      <Typography variant="h6" color="info.main">
+                        ⏰ Horarios Disponibles
+                      </Typography>
+                    </Box>
+                    
+                    {selectedPostulacion.horarios && selectedPostulacion.horarios.length > 0 ? (
+                      <List dense>
+                        {selectedPostulacion.horarios.map((horario, index) => (
+                          <ListItem key={index} sx={{ pl: 0 }}>
+                            <ListItemIcon>
+                              <Chip 
+                                label={horario.dia_semana.substring(0, 3).toUpperCase()} 
+                                size="small" 
+                                color="info" 
+                                sx={{ width: 40, fontSize: '0.7rem' }}
+                              />
+                            </ListItemIcon>
+                            <ListItemText
+                              primary={
+                                <Typography variant="body2" fontWeight="medium">
+                                  {horario.dia_semana}
+                                </Typography>
+                              }
+                              secondary={
+                                <Typography variant="caption" color="text.secondary">
+                                  🕐 {horario.hora_inicio} - {horario.hora_fin}
+                                </Typography>
+                              }
+                            />
+                          </ListItem>
+                        ))}
+                      </List>
+                    ) : (
+                      <Alert severity="warning" sx={{ mt: 1 }}>
+                        <Typography variant="body2">
+                          No hay horarios disponibles registrados
+                        </Typography>
+                      </Alert>
+                    )}
+                  </Card>
+                </Grid>
+
+                {/* MENSAJE DEL DIRECTOR */}
+                {selectedPostulacion.mensaje_entrevista && (
                   <Grid item xs={12}>
-                    <Typography variant="subtitle2">Observaciones del Comité:</Typography>
-                    <Typography variant="body2" sx={{ mt: 1, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-                      {selectedPostulacion.observaciones_evaluacion}
-                    </Typography>
+                    <Typography variant="subtitle2" color="text.secondary">💬 Mensaje del Director:</Typography>
+                    <Card variant="outlined" sx={{ mt: 1, p: 2, bgcolor: 'success.light' }}>
+                      <Typography variant="body2">
+                        {selectedPostulacion.mensaje_entrevista}
+                      </Typography>
+                    </Card>
                   </Grid>
                 )}
 
-                <Grid item xs={12}>
-                  <Typography variant="subtitle2">Documentos Adjuntos:</Typography>
-                  <Typography variant="body2" sx={{ mt: 1 }}>
-                    {selectedPostulacion.documentos_adjuntos || 'Ninguno'}
-                  </Typography>
-                </Grid>
+                {/* EVALUADOR */}
+                {selectedPostulacion.evaluador_user_id && (
+                  <Grid item xs={12}>
+                    <Typography variant="subtitle2" color="text.secondary">👨‍💼 Evaluador:</Typography>
+                    <Typography variant="body2" sx={{ mt: 1 }}>
+                      ID Usuario: {selectedPostulacion.evaluador_user_id}
+                    </Typography>
+                  </Grid>
+                )}
               </Grid>
             </Box>
           )}
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenViewDialog(false)}>Cerrar</Button>
+        <DialogActions sx={{ p: 3 }}>
+          <Button onClick={() => setOpenViewDialog(false)} variant="contained" size="large">
+            Cerrar
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>
