@@ -40,24 +40,24 @@ const apiRequest = async (url, options = {}) => {
   }
 };
 
-// API para formaciones académicas
-export const formacionesAPI = {
-  // Obtener todas las formaciones del docente
-  getFormaciones: async (page = 1, limit = 10) => {
+// API para experiencias laborales
+export const experienciasAPI = {
+  // Obtener todas las experiencias del docente
+  getExperiencias: async (page = 1, limit = 10) => {
     const params = new URLSearchParams();
     params.append('page', page.toString());
     params.append('limit', limit.toString());
     
-    return await apiRequest(`/docentes/formaciones?${params}`);
+    return await apiRequest(`/docentes/experiencias?${params}`);
   },
 
-  // Obtener formación por ID
-  getFormacionById: async (id) => {
-    return await apiRequest(`/docentes/formaciones/${id}`);
+  // Obtener experiencia por ID
+  getExperienciaById: async (id) => {
+    return await apiRequest(`/docentes/experiencias/${id}`);
   },
 
-  // Crear nueva formación académica
-  createFormacion: async (formacionData, file = null) => {
+  // Crear nueva experiencia laboral
+  createExperiencia: async (experienciaData, file = null) => {
     const token = localStorage.getItem('token');
     if (!token) {
       throw new Error('Token de acceso requerido');
@@ -71,14 +71,14 @@ export const formacionesAPI = {
         const formData = new FormData();
         
         // Agregar los campos de datos
-        Object.keys(formacionData).forEach(key => {
-          if (formacionData[key] !== null && formacionData[key] !== undefined) {
-            formData.append(key, formacionData[key]);
+        Object.keys(experienciaData).forEach(key => {
+          if (experienciaData[key] !== null && experienciaData[key] !== undefined) {
+            formData.append(key, experienciaData[key]);
           }
         });
         
         // Agregar el archivo
-        formData.append('documento', file);
+        formData.append('constancia', file);
         
         requestOptions = {
           method: 'POST',
@@ -96,11 +96,11 @@ export const formacionesAPI = {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
-          body: JSON.stringify(formacionData)
+          body: JSON.stringify(experienciaData)
         };
       }
 
-      const response = await fetch(`${API_BASE_URL}/docentes/formaciones`, requestOptions);
+      const response = await fetch(`${API_BASE_URL}/docentes/experiencias`, requestOptions);
       const data = await response.json();
       
       if (!response.ok) {
@@ -109,13 +109,13 @@ export const formacionesAPI = {
       
       return data;
     } catch (error) {
-      console.error('Error creating formacion:', error);
+      console.error('Error creating experiencia:', error);
       throw error;
     }
   },
 
-  // Actualizar formación académica
-  updateFormacion: async (id, formacionData, file = null) => {
+  // Actualizar experiencia laboral
+  updateExperiencia: async (id, experienciaData, file = null) => {
     const token = localStorage.getItem('token');
     if (!token) {
       throw new Error('Token de acceso requerido');
@@ -129,14 +129,14 @@ export const formacionesAPI = {
         const formData = new FormData();
         
         // Agregar los campos de datos
-        Object.keys(formacionData).forEach(key => {
-          if (formacionData[key] !== null && formacionData[key] !== undefined) {
-            formData.append(key, formacionData[key]);
+        Object.keys(experienciaData).forEach(key => {
+          if (experienciaData[key] !== null && experienciaData[key] !== undefined) {
+            formData.append(key, experienciaData[key]);
           }
         });
         
         // Agregar el archivo
-        formData.append('documento', file);
+        formData.append('constancia', file);
         
         requestOptions = {
           method: 'PUT',
@@ -154,11 +154,11 @@ export const formacionesAPI = {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
-          body: JSON.stringify(formacionData)
+          body: JSON.stringify(experienciaData)
         };
       }
 
-      const response = await fetch(`${API_BASE_URL}/docentes/formaciones/${id}`, requestOptions);
+      const response = await fetch(`${API_BASE_URL}/docentes/experiencias/${id}`, requestOptions);
       const data = await response.json();
       
       if (!response.ok) {
@@ -167,24 +167,24 @@ export const formacionesAPI = {
       
       return data;
     } catch (error) {
-      console.error('Error updating formacion:', error);
+      console.error('Error updating experiencia:', error);
       throw error;
     }
   },
 
-  // Eliminar formación académica
-  deleteFormacion: async (id) => {
-    return await apiRequest(`/docentes/formaciones/${id}`, {
+  // Eliminar experiencia laboral
+  deleteExperiencia: async (id) => {
+    return await apiRequest(`/docentes/experiencias/${id}`, {
       method: 'DELETE'
     });
   },
 
-  // Obtener estadísticas de formaciones
+  // Obtener estadísticas de experiencias
   getEstadisticas: async () => {
-    return await apiRequest('/docentes/formaciones/stats');
+    return await apiRequest('/docentes/experiencias/stats');
   },
 
-  // Subir documento de formación
+  // Subir documento de experiencia
   uploadDocumento: async (id, file) => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -192,10 +192,10 @@ export const formacionesAPI = {
     }
     
     const formData = new FormData();
-    formData.append('documento', file);
+    formData.append('constancia', file);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/docentes/formaciones/${id}/documento`, {
+      const response = await fetch(`${API_BASE_URL}/docentes/experiencias/${id}/documento`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -216,7 +216,7 @@ export const formacionesAPI = {
     }
   },
 
-  // Descargar documento de formación
+  // Descargar documento de experiencia
   downloadDocumento: async (id) => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -224,7 +224,7 @@ export const formacionesAPI = {
     }
     
     try {
-      const response = await fetch(`${API_BASE_URL}/docentes/formaciones/${id}/documento`, {
+      const response = await fetch(`${API_BASE_URL}/docentes/experiencias/${id}/documento`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -245,7 +245,7 @@ export const formacionesAPI = {
       // Crear elemento de descarga temporal
       const link = document.createElement('a');
       link.href = url;
-      link.download = `documento_formacion_${id}.pdf`;
+      link.download = `constancia_experiencia_${id}.pdf`;
       document.body.appendChild(link);
       link.click();
       
@@ -260,12 +260,12 @@ export const formacionesAPI = {
     }
   },
 
-  // Eliminar documento de formación
+  // Eliminar documento de experiencia
   deleteDocumento: async (id) => {
-    return await apiRequest(`/docentes/formaciones/${id}/documento`, {
+    return await apiRequest(`/docentes/experiencias/${id}/documento`, {
       method: 'DELETE'
     });
   }
 };
 
-export default formacionesAPI;
+export default experienciasAPI;

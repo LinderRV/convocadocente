@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -29,66 +29,26 @@ import {
 import {
   Add as AddIcon,
   Edit as EditIcon,
-  Delete as DeleteIcon,
   Download as DownloadIcon,
   Upload as UploadIcon
 } from '@mui/icons-material';
+import { useAuth } from '../../context/AuthContext';
+import { experienciasAPI } from '../../services/experienciasAPI';
 
 const ExperienciasPage = () => {
+  const { user } = useAuth();
   const [openDialog, setOpenDialog] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [alert, setAlert] = useState(null);
   const [page, setPage] = useState(1);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // DATOS MOCK - Tabla 'experiencias_laborales'
-  const [experiencias, setExperiencias] = useState([
-    {
-      id: 1,
-      user_id: 11, // ID del usuario autenticado
-      pais: 'Perú',
-      sector: 'Público',
-      empresa: 'Hospital Nacional Dos de Mayo',
-      ruc: '20131370912',
-      cargo: 'Médico Cardiólogo Senior',
-      fecha_inicio: '2020-03-01',
-      fecha_fin: null,
-      actual: true,
-      sin_experiencia: false,
-      constancia_archivo: 'constancia_hospital_dosdemayo.pdf'
-    },
-    {
-      id: 2,
-      user_id: 11, // ID del usuario autenticado
-      pais: 'Perú',
-      sector: 'Privado',
-      empresa: 'Clínica San Pablo',
-      ruc: '20100047218',
-      cargo: 'Jefe de Cardiología',
-      fecha_inicio: '2018-01-15',
-      fecha_fin: '2020-02-28',
-      actual: false,
-      sin_experiencia: false,
-      constancia_archivo: 'constancia_sanpablo.pdf'
-    },
-    {
-      id: 3,
-      user_id: 11, // ID del usuario autenticado
-      pais: 'Perú',
-      sector: 'Público',
-      empresa: 'Hospital Cayetano Heredia',
-      ruc: '20131370823',
-      cargo: 'Médico Residente de Cardiología',
-      fecha_inicio: '2015-03-01',
-      fecha_fin: '2017-12-31',
-      actual: false,
-      sin_experiencia: false,
-      constancia_archivo: 'constancia_residencia_heredia.pdf'
-    }
-  ]);
+  // Estado real conectado al backend
+  const [experiencias, setExperiencias] = useState([]);
 
   const [currentExperiencia, setCurrentExperiencia] = useState({
-    user_id: 11, // ID del usuario autenticado
+    user_id: user?.id || null,
     pais: '',
     sector: '',
     empresa: '',
@@ -102,19 +62,26 @@ const ExperienciasPage = () => {
   });
 
   const sectores = ['Público', 'Privado'];
-  const paises = ['Perú', 'Colombia', 'Ecuador', 'Bolivia', 'Chile', 'Argentina', 'Brasil', 'Estados Unidos', 'España', 'Otro'];
 
   const handleOpenDialog = (experiencia = null) => {
     if (experiencia) {
       setCurrentExperiencia({
         ...experiencia,
-        fecha_inicio: experiencia.fecha_inicio || '',
-        fecha_fin: experiencia.fecha_fin || ''
+        pais: experiencia.pais ? String(experiencia.pais) : '',
+        sector: experiencia.sector ? String(experiencia.sector) : '',
+        empresa: experiencia.empresa ? String(experiencia.empresa) : '',
+        ruc: experiencia.ruc ? String(experiencia.ruc) : '',
+        cargo: experiencia.cargo ? String(experiencia.cargo) : '',
+        fecha_inicio: experiencia.fecha_inicio ? experiencia.fecha_inicio.split('T')[0] : '',
+        fecha_fin: experiencia.fecha_fin ? experiencia.fecha_fin.split('T')[0] : '',
+        actual: Boolean(experiencia.actual),
+        sin_experiencia: Boolean(experiencia.sin_experiencia),
+        constancia_archivo: experiencia.constancia_archivo ? String(experiencia.constancia_archivo) : ''
       });
       setEditMode(true);
     } else {
       setCurrentExperiencia({
-        user_id: 11, // ID del usuario autenticado
+        user_id: user?.id || null,
         pais: '',
         sector: '',
         empresa: '',
@@ -135,7 +102,7 @@ const ExperienciasPage = () => {
     setOpenDialog(false);
     setSelectedFile(null);
     setCurrentExperiencia({
-      user_id: 11, // ID del usuario autenticado
+      user_id: user?.id || null,
       pais: '',
       sector: '',
       empresa: '',
@@ -147,9 +114,10 @@ const ExperienciasPage = () => {
       sin_experiencia: false,
       constancia_archivo: ''
     });
+    setEditMode(false);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!currentExperiencia.pais || !currentExperiencia.sector || 
         !currentExperiencia.empresa || !currentExperiencia.cargo || !currentExperiencia.fecha_inicio) {
       setAlert({ 
@@ -167,33 +135,56 @@ const ExperienciasPage = () => {
       return;
     }
 
-    // Si hay un archivo seleccionado, usar su nombre
-    const constanciaArchivo = selectedFile ? selectedFile.name : currentExperiencia.constancia_archivo;
+    try {
+      setLoading(true);
+      
+      if (editMode) {
+        // Actualizar experiencia existente
+        const response = await experienciasAPI.updateExperiencia(currentExperiencia.id, {
+          pais: currentExperiencia.pais,
+          sector: currentExperiencia.sector,
+          empresa: currentExperiencia.empresa,
+          ruc: currentExperiencia.ruc,
+          cargo: currentExperiencia.cargo,
+          fecha_inicio: currentExperiencia.fecha_inicio,
+          fecha_fin: currentExperiencia.fecha_fin || null,
+          actual: currentExperiencia.actual,
+          sin_experiencia: currentExperiencia.sin_experiencia
+        }, selectedFile); // Pasar el archivo seleccionado directamente
 
-    if (editMode) {
-      setExperiencias(prev => prev.map(e => 
-        e.id === currentExperiencia.id ? {...currentExperiencia, constancia_archivo: constanciaArchivo} : e
-      ));
-      setAlert({ type: 'success', message: 'Experiencia actualizada correctamente' });
-    } else {
-      const newExperiencia = {
-        ...currentExperiencia,
-        constancia_archivo: constanciaArchivo,
-        id: Math.max(...experiencias.map(e => e.id), 0) + 1
-      };
-      setExperiencias(prev => [...prev, newExperiencia]);
-      setAlert({ type: 'success', message: 'Experiencia agregada correctamente' });
+        if (response.success) {
+          setAlert({ type: 'success', message: 'Experiencia actualizada correctamente' });
+          await loadExperiencias();
+        }
+      } else {
+        // Crear nueva experiencia
+        const response = await experienciasAPI.createExperiencia({
+          pais: currentExperiencia.pais,
+          sector: currentExperiencia.sector,
+          empresa: currentExperiencia.empresa,
+          ruc: currentExperiencia.ruc,
+          cargo: currentExperiencia.cargo,
+          fecha_inicio: currentExperiencia.fecha_inicio,
+          fecha_fin: currentExperiencia.fecha_fin || null,
+          actual: currentExperiencia.actual,
+          sin_experiencia: currentExperiencia.sin_experiencia
+        }, selectedFile); // Pasar el archivo seleccionado directamente
+
+        if (response.success) {
+          setAlert({ type: 'success', message: 'Experiencia creada correctamente' });
+          await loadExperiencias();
+        }
+      }
+      
+      handleCloseDialog();
+    } catch (error) {
+      setAlert({
+        type: 'error',
+        message: error.message || 'Error al guardar la experiencia'
+      });
+    } finally {
+      setLoading(false);
     }
-    
-    // Aquí iría la lógica para subir el archivo al servidor
-    if (selectedFile) {
-      console.log('Archivo a subir:', selectedFile);
-      // const formData = new FormData();
-      // formData.append('constancia', selectedFile);
-      // Enviar formData al backend
-    }
-    
-    handleCloseDialog();
   };
 
   const handleFileChange = (event) => {
@@ -219,19 +210,75 @@ const ExperienciasPage = () => {
     }
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar esta experiencia laboral?')) {
-      setExperiencias(prev => prev.filter(e => e.id !== id));
-      setAlert({ type: 'success', message: 'Experiencia eliminada correctamente' });
+  // Cargar experiencias al montar el componente
+  useEffect(() => {
+    loadExperiencias();
+  }, []);
+
+  const loadExperiencias = async () => {
+    try {
+      setLoading(true);
+      
+      // Verificar que el usuario esté autenticado
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setAlert({
+          type: 'error',
+          message: 'No hay token de autenticación. Por favor, inicia sesión nuevamente.'
+        });
+        return;
+      }
+
+      const response = await experienciasAPI.getExperiencias(page, 10);
+      if (response.success) {
+        setExperiencias(response.data);
+        // setTotalPages(response.pagination?.totalPages || 1);
+      }
+    } catch (error) {
+      console.error('Error cargando experiencias:', error);
+      setAlert({ 
+        type: 'error', 
+        message: error.message || 'Error al cargar las experiencias' 
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm('¿Está seguro de que desea eliminar esta experiencia?')) {
+      try {
+        setLoading(true);
+        await experienciasAPI.deleteExperiencia(id);
+        setAlert({ type: 'success', message: 'Experiencia eliminada correctamente' });
+        await loadExperiencias();
+      } catch (error) {
+        console.error('Error eliminando experiencia:', error);
+        setAlert({ type: 'error', message: 'Error al eliminar la experiencia' });
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  const handleDownload = async (experiencia) => {
+    if (!experiencia.constancia_archivo) {
+      setAlert({ type: 'error', message: 'No hay archivo disponible para descargar' });
+      return;
+    }
+
+    try {
+      await experienciasAPI.downloadDocumento(experiencia.id);
+    } catch (error) {
+      console.error('Error descargando archivo:', error);
+      setAlert({ type: 'error', message: 'Error al descargar el archivo' });
     }
   };
 
   const formatFecha = (fecha) => {
     if (!fecha) return 'Actual';
-    return new Date(fecha).toLocaleDateString('es-ES', {
-      year: 'numeric',
-      month: 'short'
-    });
+    // Extraer solo la parte de fecha YYYY-MM-DD
+    return fecha.split('T')[0];
   };
 
   const formatDuracion = (fechaInicio, fechaFin) => {
@@ -323,7 +370,7 @@ const ExperienciasPage = () => {
                         <Typography variant="subtitle2" fontWeight="bold">
                           {experiencia.cargo}
                         </Typography>
-                        {experiencia.actual && (
+                        {Boolean(experiencia.actual) && (
                           <Chip label="Actual" color="success" size="small" sx={{ mt: 0.5 }} />
                         )}
                       </TableCell>
@@ -355,11 +402,9 @@ const ExperienciasPage = () => {
                           <Button
                             size="small"
                             startIcon={<DownloadIcon />}
-                            onClick={() => {
-                              setAlert({ type: 'info', message: `Descargando ${experiencia.constancia_archivo}` });
-                            }}
+                            onClick={() => handleDownload(experiencia)}
                           >
-                            Ver
+                            Descargar
                           </Button>
                         ) : (
                           <Typography variant="body2" color="text.secondary">
@@ -374,13 +419,6 @@ const ExperienciasPage = () => {
                           color="primary"
                         >
                           <EditIcon />
-                        </IconButton>
-                        <IconButton 
-                          size="small" 
-                          onClick={() => handleDelete(experiencia.id)}
-                          color="error"
-                        >
-                          <DeleteIcon />
                         </IconButton>
                       </TableCell>
                     </TableRow>
@@ -414,7 +452,6 @@ const ExperienciasPage = () => {
             <Grid container spacing={2}>
               <Grid item xs={12} md={6}>
                 <TextField
-                  select
                   label="País"
                   value={currentExperiencia.pais}
                   onChange={(e) => setCurrentExperiencia({ 
@@ -423,13 +460,8 @@ const ExperienciasPage = () => {
                   })}
                   required
                   fullWidth
-                >
-                  {paises.map((pais) => (
-                    <MenuItem key={pais} value={pais}>
-                      {pais}
-                    </MenuItem>
-                  ))}
-                </TextField>
+                  placeholder="Ejemplo: Perú"
+                />
               </Grid>
 
               <Grid item xs={12} md={6}>
@@ -519,9 +551,9 @@ const ExperienciasPage = () => {
                     fecha_fin: e.target.value 
                   })}
                   InputLabelProps={{ shrink: true }}
-                  disabled={currentExperiencia.actual}
+                  disabled={Boolean(currentExperiencia.actual)}
                   fullWidth
-                  helperText={currentExperiencia.actual ? "No necesario para trabajo actual" : ""}
+                  helperText={Boolean(currentExperiencia.actual) ? "No necesario para trabajo actual" : ""}
                 />
               </Grid>
 
@@ -529,7 +561,7 @@ const ExperienciasPage = () => {
                 <FormControlLabel
                   control={
                     <Switch
-                      checked={currentExperiencia.actual}
+                      checked={Boolean(currentExperiencia.actual)}
                       onChange={(e) => setCurrentExperiencia({ 
                         ...currentExperiencia, 
                         actual: e.target.checked,
@@ -545,7 +577,7 @@ const ExperienciasPage = () => {
                 <FormControlLabel
                   control={
                     <Switch
-                      checked={currentExperiencia.sin_experiencia}
+                      checked={Boolean(currentExperiencia.sin_experiencia)}
                       onChange={(e) => setCurrentExperiencia({ 
                         ...currentExperiencia, 
                         sin_experiencia: e.target.checked

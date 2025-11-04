@@ -165,6 +165,40 @@ class FormacionAcademica {
     }
   }
 
+  // Actualizar solo el documento de una formación
+  static async updateDocumento(id, documento_archivo) {
+    try {
+      const query = `
+        UPDATE formaciones_academicas 
+        SET documento_archivo = ?
+        WHERE id = ?
+      `;
+
+      await pool.execute(query, [documento_archivo, String(id)]);
+      return await this.findById(id);
+    } catch (error) {
+      console.error('Error en updateDocumento:', error);
+      throw error;
+    }
+  }
+
+  // Eliminar documento de una formación
+  static async removeDocumento(id) {
+    try {
+      const query = `
+        UPDATE formaciones_academicas 
+        SET documento_archivo = NULL
+        WHERE id = ?
+      `;
+
+      await pool.execute(query, [String(id)]);
+      return await this.findById(id);
+    } catch (error) {
+      console.error('Error en removeDocumento:', error);
+      throw error;
+    }
+  }
+
   // Obtener estadísticas de formación de un docente
   static async getStatsById(userId) {
     try {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -22,59 +22,35 @@ import {
   TextField,
   MenuItem,
   Alert,
-  Pagination
+  Pagination,
+  CircularProgress,
+  Backdrop
 } from '@mui/material';
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
   Download as DownloadIcon,
-  Upload as UploadIcon
+  Upload as UploadIcon,
+  DeleteOutline as DeleteOutlineIcon
 } from '@mui/icons-material';
+import { useAuth } from '../../context/AuthContext';
+import formacionesAPI from '../../services/formacionesAPI';
 
 const FormacionesPage = () => {
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const [openDialog, setOpenDialog] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [alert, setAlert] = useState(null);
   const [page, setPage] = useState(1);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [totalPages, setTotalPages] = useState(1);
 
-  // DATOS MOCK - Tabla 'formaciones_academicas'
-  const [formaciones, setFormaciones] = useState([
-    {
-      id: 1,
-      user_id: 11, // ID del usuario autenticado
-      nivel_formacion: 'Doctorado',
-      programa_academico: 'Doctorado en Medicina',
-      institucion: 'Universidad Nacional Mayor de San Marcos',
-      pais: 'Perú',
-      fecha_obtencion: '2020-12-15',
-      documento_archivo: 'doctorado_medicina.pdf'
-    },
-    {
-      id: 2,
-      user_id: 11, // ID del usuario autenticado
-      nivel_formacion: 'Maestría',
-      programa_academico: 'Maestría en Cardiología',
-      institucion: 'Universidad Cayetano Heredia',
-      pais: 'Perú',
-      fecha_obtencion: '2018-07-20',
-      documento_archivo: 'maestria_cardiologia.pdf'
-    },
-    {
-      id: 3,
-      user_id: 11, // ID del usuario autenticado
-      nivel_formacion: 'Licenciatura',
-      programa_academico: 'Medicina Humana',
-      institucion: 'Universidad Nacional de Piura',
-      pais: 'Perú',
-      fecha_obtencion: '2015-12-10',
-      documento_archivo: 'titulo_medicina.pdf'
-    }
-  ]);
+  const [formaciones, setFormaciones] = useState([]);
 
   const [currentFormacion, setCurrentFormacion] = useState({
-    user_id: 11, // ID del usuario autenticado
     nivel_formacion: '',
     programa_academico: '',
     institucion: '',
@@ -94,18 +70,81 @@ const FormacionesPage = () => {
     'Otro'
   ];
 
-  const paises = ['Perú', 'Colombia', 'Ecuador', 'Bolivia', 'Chile', 'Argentina', 'Brasil', 'Estados Unidos', 'España', 'Otro'];
+  // Cargar formaciones al montar el componente
+  useEffect(() => {
+    // Debug: Verificar estado de autenticación
+    console.log('User from context:', user);
+    console.log('isAuthenticated:', isAuthenticated);
+    console.log('authLoading:', authLoading);
+    console.log('Token in localStorage:', localStorage.getItem('token'));
+    
+    if (!authLoading && isAuthenticated && user) {
+      loadFormaciones();
+    } else if (!authLoading && !isAuthenticated) {
+      setAlert({
+        type: 'error',
+        message: 'No estás autenticado. Por favor, inicia sesión nuevamente.'
+      });
+      setLoading(false);
+    }
+  }, [page, user, isAuthenticated, authLoading]);
+
+  const loadFormaciones = async () => {
+    try {
+      setLoading(true);
+      
+      // Verificar que el usuario esté autenticado
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setAlert({
+          type: 'error',
+          message: 'No hay token de autenticación. Por favor, inicia sesión nuevamente.'
+        });
+        return;
+      }
+
+      const response = await formacionesAPI.getFormaciones(page, 10);
+      if (response.success) {
+        setFormaciones(response.data);
+        setTotalPages(response.pagination?.totalPages || 1);
+      }
+    } catch (error) {
+      console.error('Error loading formaciones:', error);
+      
+      // Manejo específico de errores de autenticación
+      if (error.message?.includes('Token') || error.message?.includes('Unauthorized')) {
+        setAlert({
+          type: 'error',
+          message: 'Sesión expirada. Por favor, inicia sesión nuevamente.'
+        });
+      } else {
+        setAlert({
+          type: 'error',
+          message: error.message || 'Error al cargar las formaciones'
+        });
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Formatear fecha para input date
+  const formatDateForInput = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '';
+    return date.toISOString().split('T')[0];
+  };
 
   const handleOpenDialog = (formacion = null) => {
     if (formacion) {
       setCurrentFormacion({
         ...formacion,
-        fecha_obtencion: formacion.fecha_obtencion || ''
+        fecha_obtencion: formatDateForInput(formacion.fecha_obtencion)
       });
       setEditMode(true);
     } else {
       setCurrentFormacion({
-        user_id: 11, // ID del usuario autenticado
         nivel_formacion: '',
         programa_academico: '',
         institucion: '',
@@ -115,6 +154,7 @@ const FormacionesPage = () => {
       });
       setEditMode(false);
     }
+    setSelectedFile(null);
     setOpenDialog(true);
   };
 
@@ -122,7 +162,6 @@ const FormacionesPage = () => {
     setOpenDialog(false);
     setSelectedFile(null);
     setCurrentFormacion({
-      user_id: 11, // ID del usuario autenticado
       nivel_formacion: '',
       programa_academico: '',
       institucion: '',
@@ -132,7 +171,7 @@ const FormacionesPage = () => {
     });
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!currentFormacion.nivel_formacion || !currentFormacion.programa_academico || 
         !currentFormacion.institucion || !currentFormacion.pais) {
       setAlert({ 
@@ -142,33 +181,64 @@ const FormacionesPage = () => {
       return;
     }
 
-    // Si hay un archivo seleccionado, usar su nombre
-    const documentoArchivo = selectedFile ? selectedFile.name : currentFormacion.documento_archivo;
+    try {
+      setSaving(true);
+      
+      if (editMode) {
+        // Actualizar formación existente
+        const response = await formacionesAPI.updateFormacion(currentFormacion.id, {
+          nivel_formacion: currentFormacion.nivel_formacion,
+          programa_academico: currentFormacion.programa_academico,
+          institucion: currentFormacion.institucion,
+          pais: currentFormacion.pais,
+          fecha_obtencion: currentFormacion.fecha_obtencion || null
+        }, selectedFile); // Pasar el archivo seleccionado directamente
 
-    if (editMode) {
-      setFormaciones(prev => prev.map(f => 
-        f.id === currentFormacion.id ? {...currentFormacion, documento_archivo: documentoArchivo} : f
-      ));
-      setAlert({ type: 'success', message: 'Formación actualizada correctamente' });
-    } else {
-      const newFormacion = {
-        ...currentFormacion,
-        documento_archivo: documentoArchivo,
-        id: Math.max(...formaciones.map(f => f.id), 0) + 1
-      };
-      setFormaciones(prev => [...prev, newFormacion]);
-      setAlert({ type: 'success', message: 'Formación agregada correctamente' });
+        if (response.success) {
+          setAlert({ type: 'success', message: 'Formación actualizada correctamente' });
+          await loadFormaciones();
+        }
+      } else {
+        // Crear nueva formación
+        const response = await formacionesAPI.createFormacion({
+          nivel_formacion: currentFormacion.nivel_formacion,
+          programa_academico: currentFormacion.programa_academico,
+          institucion: currentFormacion.institucion,
+          pais: currentFormacion.pais,
+          fecha_obtencion: currentFormacion.fecha_obtencion || null
+        }, selectedFile); // Pasar el archivo seleccionado directamente
+
+        if (response.success) {
+          setAlert({ type: 'success', message: 'Formación creada correctamente' });
+          await loadFormaciones();
+        }
+      }
+      
+      handleCloseDialog();
+    } catch (error) {
+      setAlert({
+        type: 'error',
+        message: error.response?.data?.message || 'Error al guardar la formación'
+      });
+    } finally {
+      setSaving(false);
     }
-    
-    // Aquí iría la lógica para subir el archivo al servidor
-    if (selectedFile) {
-      console.log('Archivo a subir:', selectedFile);
-      // const formData = new FormData();
-      // formData.append('documento', selectedFile);
-      // Enviar formData al backend
+  };
+
+  const handleFileUpload = async (formacionId) => {
+    if (!selectedFile) return;
+
+    try {
+      const response = await formacionesAPI.uploadDocumento(formacionId, selectedFile);
+      if (response.success) {
+        setAlert({ type: 'success', message: 'Documento subido correctamente' });
+      }
+    } catch (error) {
+      setAlert({
+        type: 'error',
+        message: error.response?.data?.message || 'Error al subir el documento'
+      });
     }
-    
-    handleCloseDialog();
   };
 
   const handleFileChange = (event) => {
@@ -187,26 +257,24 @@ const FormacionesPage = () => {
       }
       
       setSelectedFile(file);
-      setCurrentFormacion({
-        ...currentFormacion,
-        documento_archivo: file.name
-      });
     }
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar esta formación académica?')) {
-      setFormaciones(prev => prev.filter(f => f.id !== id));
-      setAlert({ type: 'success', message: 'Formación eliminada correctamente' });
+  const handleDownloadDocument = async (formacion) => {
+    try {
+      await formacionesAPI.downloadDocumento(formacion.id);
+      setAlert({ type: 'success', message: 'Documento descargado correctamente' });
+    } catch (error) {
+      setAlert({
+        type: 'error',
+        message: error.response?.data?.message || 'Error al descargar el documento'
+      });
     }
   };
 
   const formatFecha = (fecha) => {
     if (!fecha) return 'No especificada';
-    return new Date(fecha).toLocaleDateString('es-ES', {
-      year: 'numeric',
-      month: 'long'
-    });
+    return fecha.split('T')[0];
   };
 
   const getNivelColor = (nivel) => {
@@ -220,8 +288,33 @@ const FormacionesPage = () => {
     }
   };
 
+  // Mostrar loading mientras se verifica la autenticación
+  if (authLoading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  // Mostrar error si no está autenticado
+  if (!isAuthenticated) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Typography variant="h6" color="error" align="center">
+          No estás autenticado. Por favor, inicia sesión para acceder a esta página.
+        </Typography>
+      </Box>
+    );
+  }
+
   return (
     <Box sx={{ p: 3 }}>
+      {/* Loading Backdrop */}
+      <Backdrop sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }} open={loading || saving}>
+        <CircularProgress color="inherit" />
+      </Backdrop>
+
       {/* Header */}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', mb: 3 }}>
@@ -298,12 +391,9 @@ const FormacionesPage = () => {
                           <Button
                             size="small"
                             startIcon={<DownloadIcon />}
-                            onClick={() => {
-                              // Lógica para descargar documento
-                              setAlert({ type: 'info', message: `Descargando ${formacion.documento_archivo}` });
-                            }}
+                            onClick={() => handleDownloadDocument(formacion)}
                           >
-                            Ver
+                            Descargar
                           </Button>
                         ) : (
                           <Typography variant="body2" color="text.secondary">
@@ -319,13 +409,6 @@ const FormacionesPage = () => {
                         >
                           <EditIcon />
                         </IconButton>
-                        <IconButton 
-                          size="small" 
-                          onClick={() => handleDelete(formacion.id)}
-                          color="error"
-                        >
-                          <DeleteIcon />
-                        </IconButton>
                       </TableCell>
                     </TableRow>
                   ))
@@ -335,10 +418,10 @@ const FormacionesPage = () => {
           </TableContainer>
 
           {/* Paginación */}
-          {formaciones.length > 10 && (
+          {totalPages > 1 && (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
               <Pagination 
-                count={Math.ceil(formaciones.length / 10)}
+                count={totalPages}
                 page={page}
                 onChange={(e, newPage) => setPage(newPage)}
                 color="primary"
@@ -398,7 +481,6 @@ const FormacionesPage = () => {
             />
             
             <TextField
-              select
               label="País"
               value={currentFormacion.pais}
               onChange={(e) => setCurrentFormacion({ 
@@ -407,13 +489,8 @@ const FormacionesPage = () => {
               })}
               required
               fullWidth
-            >
-              {paises.map((pais) => (
-                <MenuItem key={pais} value={pais}>
-                  {pais}
-                </MenuItem>
-              ))}
-            </TextField>
+              placeholder="Ej: Perú, Colombia, España, etc."
+            />
             
             <TextField
               type="date"
@@ -462,9 +539,11 @@ const FormacionesPage = () => {
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog}>Cancelar</Button>
-          <Button onClick={handleSubmit} variant="contained">
-            {editMode ? 'Actualizar' : 'Crear'}
+          <Button onClick={handleCloseDialog} disabled={saving}>
+            Cancelar
+          </Button>
+          <Button onClick={handleSubmit} variant="contained" disabled={saving}>
+            {saving ? 'Guardando...' : (editMode ? 'Actualizar' : 'Crear')}
           </Button>
         </DialogActions>
       </Dialog>
