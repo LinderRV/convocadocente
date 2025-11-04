@@ -31,7 +31,13 @@ import {
   Logout as LogoutIcon,
   Settings as SettingsIcon,
   Notifications as NotificationsIcon,
-  ChevronLeft as ChevronLeftIcon
+  ChevronLeft as ChevronLeftIcon,
+  Person as PersonIcon,
+  Work as WorkIcon,
+  Schedule as ScheduleIcon,
+  Assignment as AssignmentIcon,
+  Favorite as FavoriteIcon,
+  CalendarToday as CalendarIcon
 } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
 
@@ -47,8 +53,11 @@ const Layout = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
 
-  // Elementos del menú lateral
-  const menuItems = [
+  // Detectar si el usuario es docente o administrativo
+  const isDocente = !user?.roles || user?.roles.length === 0;
+
+  // Elementos del menú lateral para ADMINISTRATIVOS
+  const menuItemsAdmin = [
     {
       text: 'Inicio',
       icon: <DashboardIcon />,
@@ -68,6 +77,55 @@ const Layout = () => {
       description: 'Gestión de cursos'
     }
   ];
+
+  // Elementos del menú lateral para DOCENTES
+  const menuItemsDocente = [
+    {
+      text: 'Mi Dashboard',
+      icon: <DashboardIcon />,
+      path: '/docente/dashboard',
+      description: 'Panel principal docente'
+    },
+    {
+      text: 'Mi Perfil',
+      icon: <PersonIcon />,
+      path: '/docente/perfil',
+      description: 'Información personal'
+    },
+    {
+      text: 'Formaciones',
+      icon: <SchoolIcon />,
+      path: '/docente/formaciones',
+      description: 'Formaciones académicas'
+    },
+    {
+      text: 'Experiencias',
+      icon: <WorkIcon />,
+      path: '/docente/experiencias',
+      description: 'Experiencias laborales'
+    },
+    {
+      text: 'Cursos de Interés',
+      icon: <FavoriteIcon />,
+      path: '/docente/cursos-interes',
+      description: 'Cursos que me interesan'
+    },
+    {
+      text: 'Mis Horarios',
+      icon: <ScheduleIcon />,
+      path: '/docente/horarios',
+      description: 'Disponibilidad horaria'
+    },
+    {
+      text: 'Postulaciones',
+      icon: <AssignmentIcon />,
+      path: '/docente/postulaciones',
+      description: 'Mis postulaciones'
+    }
+  ];
+
+  // Seleccionar menú según tipo de usuario
+  const menuItems = isDocente ? menuItemsDocente : menuItemsAdmin;
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -113,7 +171,7 @@ const Layout = () => {
             ConvocaDocente
           </Typography>
           <Typography variant="caption" sx={{ opacity: 0.8 }}>
-            Sistema de Gestión
+            {isDocente ? 'Portal Docente' : 'Sistema de Gestión'}
           </Typography>
         </Box>
         {isMobile && (
@@ -148,6 +206,12 @@ const Layout = () => {
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
               {user?.email || 'usuario@ejemplo.com'}
             </Typography>
+            <Chip 
+              label={isDocente ? 'Docente' : 'Administrador'} 
+              size="small" 
+              color={isDocente ? 'primary' : 'secondary'}
+              variant="outlined"
+            />
           </Box>
         </Box>
       </Box>

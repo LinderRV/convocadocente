@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { CircularProgress, Box } from '@mui/material';
 
 const ProtectedRoute = ({ children, requiredRoles = [] }) => {
-  const { isAuthenticated, isLoading, user } = useAuth();
+  const { isAuthenticated, isLoading, user, getRedirectPath } = useAuth();
   const location = useLocation();
 
   // Mostrar loading mientras se verifica autenticación
@@ -24,6 +24,12 @@ const ProtectedRoute = ({ children, requiredRoles = [] }) => {
   // Si no está autenticado, redirigir al login
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // Si están en la raíz (/), redirigir según el tipo de usuario
+  if (location.pathname === '/') {
+    const redirectPath = getRedirectPath(user);
+    return <Navigate to={redirectPath} replace />;
   }
 
   // Si se requieren roles específicos, verificar que el usuario los tenga

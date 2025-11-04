@@ -143,6 +143,21 @@ export const AuthProvider = ({ children }) => {
     loadUser();
   }, []);
 
+  // Función para obtener la ruta de redirección según el tipo de usuario
+  const getRedirectPath = (user) => {
+    // Si no tiene roles o tiene array vacío = DOCENTE
+    if (!user?.roles || user.roles.length === 0) {
+      return '/docente/dashboard';
+    }
+    // Si tiene roles = ADMINISTRATIVO
+    return '/dashboard';
+  };
+
+  // Función para detectar tipo de usuario
+  const getUserType = (user) => {
+    return (!user?.roles || user.roles.length === 0) ? 'docente' : 'admin';
+  };
+
   // Función para iniciar sesión
   const login = async (email, password) => {
     try {
@@ -155,7 +170,10 @@ export const AuthProvider = ({ children }) => {
           type: AuthActionTypes.LOGIN_SUCCESS,
           payload: response.data.data
         });
-        return { success: true };
+        return { 
+          success: true, 
+          redirectPath: getRedirectPath(response.data.data.user) 
+        };
       } else {
         throw new Error(response.data.message || 'Error al iniciar sesión');
       }
@@ -208,7 +226,10 @@ export const AuthProvider = ({ children }) => {
           type: AuthActionTypes.LOGIN_SUCCESS,
           payload: response.data.data
         });
-        return { success: true };
+        return { 
+          success: true, 
+          redirectPath: getRedirectPath(response.data.data.user) 
+        };
       } else {
         throw new Error(response.data.message || 'Error al iniciar sesión con Google');
       }
@@ -292,6 +313,14 @@ export const AuthProvider = ({ children }) => {
     return ['admin', 'coordinador'].includes(state.user?.rol);
   };
 
+  // Verificar si el usuario es docente (sin roles asignados)
+  const isDocente = () => {
+    return getUserType(state.user) === 'docente';
+  };
+
+  // Obtener tipo de usuario
+  const userType = getUserType(state.user);
+
   // Valor del contexto
   const value = {
     // Estado
@@ -309,7 +338,10 @@ export const AuthProvider = ({ children }) => {
     // Utilidades
     hasRole,
     isAdmin,
-    isCoordinatorOrAdmin
+    isCoordinatorOrAdmin,
+    isDocente,
+    getUserType: () => userType,
+    getRedirectPath
   };
 
   return (

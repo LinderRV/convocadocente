@@ -38,8 +38,8 @@ class AuthService {
     // Iniciar sesión
     static async login(email, password) {
         try {
-            // Buscar usuario por email
-            const user = await Usuario.findByEmail(email);
+            // Buscar usuario por email con roles
+            const user = await Usuario.findByEmailWithRoles(email);
             if (!user) {
                 throw new Error('Credenciales inválidas');
             }
@@ -75,7 +75,7 @@ class AuthService {
             }
 
             // Buscar usuario existente por email
-            let user = await Usuario.findByEmail(email);
+            let user = await Usuario.findByEmailWithRoles(email);
 
             if (!user) {
                 // Crear nuevo usuario si no existe
@@ -86,7 +86,7 @@ class AuthService {
                     password: null // Sin contraseña para usuarios de Google
                 });
 
-                user = await Usuario.findById(userId);
+                user = await Usuario.findByIdWithRoles(userId);
             } else {
                 // Actualizar google_id si no existe
                 if (!user.google_id && google_id) {

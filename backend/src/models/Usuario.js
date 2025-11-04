@@ -97,6 +97,36 @@ class Usuario {
         return result.affectedRows > 0;
     }
 
+    // Obtener roles del usuario
+    static async getUserRoles(userId) {
+        const sql = `
+            SELECT r.nombre as rol_nombre
+            FROM usuario_roles ur 
+            INNER JOIN roles r ON ur.role_id = r.id 
+            WHERE ur.user_id = ?
+        `;
+        const results = await query(sql, [userId]);
+        return results.map(row => row.rol_nombre);
+    }
+
+    // Buscar usuario por email con roles
+    static async findByEmailWithRoles(email) {
+        const user = await this.findByEmail(email);
+        if (user) {
+            user.roles = await this.getUserRoles(user.id);
+        }
+        return user;
+    }
+
+    // Buscar usuario por ID con roles
+    static async findByIdWithRoles(id) {
+        const user = await this.findById(id);
+        if (user) {
+            user.roles = await this.getUserRoles(user.id);
+        }
+        return user;
+    }
+
     // Obtener usuarios administrativos con paginación
     static async findAdministrativeUsers(filters = {}) {
         try {

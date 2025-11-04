@@ -14,6 +14,9 @@ const authRoutes = require('./src/routes/authRoutes');
 const usuariosRoutes = require('./src/routes/usuariosRoutes');
 const cursosRoutes = require('./src/routes/cursosRoutes');
 
+// Importar rutas de docentes
+const formacionesRoutes = require('./src/routes/docentes/formacionesRoutes');
+
 // Importar middleware personalizado
 const errorHandler = require('./src/middleware/errorHandler');
 const notFound = require('./src/middleware/notFound');
@@ -52,6 +55,9 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/auth', authRoutes);
 app.use('/api/usuarios', usuariosRoutes);
 app.use('/api/cursos', cursosRoutes);
+
+// Rutas de docentes
+app.use('/api/docentes/formaciones', formacionesRoutes);
 
 // Ruta de salud
 app.get('/api/health', (req, res) => {

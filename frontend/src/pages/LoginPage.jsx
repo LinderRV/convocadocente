@@ -78,7 +78,7 @@ const LoginPage = () => {
       if (result.success) {
         setSuccessMessage('¡Inicio de sesión exitoso con Google!');
         setOpenSnackbar(true);
-        navigate('/dashboard');
+        navigate(result.redirectPath || '/dashboard');
       } else {
         setError(result.error || 'Error al iniciar sesión con Google');
       }
@@ -127,7 +127,7 @@ const LoginPage = () => {
       const result = await login(formData.email, formData.password);
       
       if (result.success) {
-        navigate('/dashboard');
+        navigate(result.redirectPath || '/dashboard');
       } else {
         setError(result.error || 'Error al iniciar sesión');
       }
@@ -179,12 +179,12 @@ const LoginPage = () => {
                   ConvocaDocente
                 </Typography>
                 <Typography variant="h6" sx={{ opacity: 0.9, mb: 3 }}>
-                  Sistema profesional de gestión de convocatorias docentes
+                  Sistema oficial de convocatoria docente de la Universidad María Auxiliadora.
                 </Typography>
                 <Typography variant="body1" sx={{ opacity: 0.8, maxWidth: 300 }}>
                   {isRegisterMode 
                     ? 'Únete a nuestra plataforma y accede a las mejores oportunidades académicas'
-                    : 'Accede a tu cuenta y gestiona convocatorias de manera eficiente'
+                    : 'Registra tu experiencia, formación y disponibilidad para postular a cursos en distintas especialidades.'
                   }
                 </Typography>
               </Box>

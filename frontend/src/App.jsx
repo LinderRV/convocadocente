@@ -15,6 +15,15 @@ import UsuariosPage from './pages/UsuariosPage';
 import CursosPage from './pages/CursosPage';
 import LoginPage from './pages/LoginPage';
 
+// Pages Docentes
+import DashboardDocente from './components/docentes/DashboardDocente';
+import PerfilDocentePage from './pages/docentes/PerfilDocentePage';
+import FormacionesPage from './pages/docentes/FormacionesPage';
+import ExperienciasPage from './pages/docentes/ExperienciasPage';
+import CursosInteresPage from './pages/docentes/CursosInteresPage';
+import HorariosPage from './pages/docentes/HorariosPage';
+import PostulacionesPage from './pages/docentes/PostulacionesPage';
+
 // Theme
 import { theme } from './theme/theme';
 
@@ -45,6 +54,15 @@ function App() {
               <Route path="convocatorias" element={<div>Convocatorias</div>} />
               <Route path="perfil" element={<div>Perfil</div>} />
               <Route path="configuracion" element={<div>Configuración</div>} />
+              
+              {/* Rutas para DOCENTES */}
+              <Route path="docente/dashboard" element={<DashboardDocente />} />
+              <Route path="docente/perfil" element={<PerfilDocentePage />} />
+              <Route path="docente/formaciones" element={<FormacionesPage />} />
+              <Route path="docente/experiencias" element={<ExperienciasPage />} />
+              <Route path="docente/cursos-interes" element={<CursosInteresPage />} />
+              <Route path="docente/horarios" element={<HorariosPage />} />
+              <Route path="docente/postulaciones" element={<PostulacionesPage />} />
               
               {/* Rutas para administradores */}
               <Route path="admin/*" element={
