@@ -11,7 +11,8 @@ import Layout from './components/Layout/Layout';
 
 // Pages
 import Dashboard from './components/Dashboard/Dashboard';
-import Docentes from './components/Docentes/Docentes';
+import UsuariosPage from './pages/UsuariosPage';
+import CursosPage from './pages/CursosPage';
 import LoginPage from './pages/LoginPage';
 
 // Theme
@@ -39,9 +40,11 @@ function App() {
             }>
               <Route index element={<Dashboard />} />
               <Route path="dashboard" element={<Dashboard />} />
-              <Route path="docentes" element={<Docentes />} />
+              <Route path="usuarios" element={<UsuariosPage />} />
+              <Route path="cursos" element={<CursosPage />} />
               <Route path="convocatorias" element={<div>Convocatorias</div>} />
               <Route path="perfil" element={<div>Perfil</div>} />
+              <Route path="configuracion" element={<div>Configuración</div>} />
               
               {/* Rutas para administradores */}
               <Route path="admin/*" element={

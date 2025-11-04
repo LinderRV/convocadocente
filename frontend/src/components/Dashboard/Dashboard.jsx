@@ -9,47 +9,205 @@ import {
   Alert,
   Chip,
   LinearProgress,
+  Avatar,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
+  ListItemSecondaryAction,
+  IconButton,
+  Paper,
+  Divider,
+  useTheme,
+  alpha
 } from '@mui/material';
 import {
   People as PeopleIcon,
   Work as WorkIcon,
   Assignment as AssignmentIcon,
   TrendingUp as TrendingUpIcon,
+  Add as AddIcon,
+  Visibility as VisibilityIcon,
+  Edit as EditIcon,
+  School as SchoolIcon,
+  PersonAdd as PersonAddIcon,
+  BarChart as BarChartIcon,
+  Notifications as NotificationsIcon,
+  Schedule as ScheduleIcon,
+  CheckCircle as CheckCircleIcon,
+  Warning as WarningIcon
 } from '@mui/icons-material';
 import { testConnection } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 
-const StatCard = ({ title, value, icon, color = 'primary', trend }) => (
-  <Card sx={{ height: '100%' }}>
-    <CardContent>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', color: `${color}.main` }}>
-          {icon}
+const StatCard = ({ title, value, icon, color = 'primary', trend, subtitle, loading }) => {
+  const theme = useTheme();
+  
+  return (
+    <Card 
+      sx={{ 
+        height: '100%',
+        position: 'relative',
+        overflow: 'visible',
+        transition: 'all 0.3s ease-in-out',
+        '&:hover': {
+          transform: 'translateY(-4px)',
+          boxShadow: theme.shadows[8]
+        }
+      }}
+    >
+      <CardContent sx={{ pb: 2 }}>
+        {/* Icono decorativo */}
+        <Box
+          sx={{
+            position: 'absolute',
+            top: -10,
+            right: 20,
+            bgcolor: `${color}.main`,
+            borderRadius: 2,
+            p: 1.5,
+            boxShadow: theme.shadows[4]
+          }}
+        >
+          {React.cloneElement(icon, { sx: { color: 'white', fontSize: 28 } })}
         </Box>
-        {trend && (
-          <Chip
-            label={`+${trend}%`}
-            size="small"
-            color={trend > 0 ? 'success' : 'error'}
-            icon={<TrendingUpIcon />}
-          />
-        )}
+
+        <Box sx={{ mt: 2 }}>
+          {loading ? (
+            <Box>
+              <LinearProgress sx={{ mb: 2, borderRadius: 1 }} />
+              <Typography variant="body2" color="text.secondary">
+                Cargando...
+              </Typography>
+            </Box>
+          ) : (
+            <>
+              <Typography variant="h3" component="div" sx={{ 
+                fontWeight: 'bold', 
+                mb: 1,
+                color: `${color}.main`,
+                fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif'
+              }}>
+                {value}
+              </Typography>
+              <Typography variant="h6" sx={{ mb: 1, fontWeight: 500 }}>
+                {title}
+              </Typography>
+              {subtitle && (
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                  {subtitle}
+                </Typography>
+              )}
+              {trend && (
+                <Chip
+                  label={`${trend > 0 ? '+' : ''}${trend}%`}
+                  size="small"
+                  color={trend > 0 ? 'success' : 'error'}
+                  icon={<TrendingUpIcon />}
+                  sx={{ fontWeight: 600 }}
+                />
+              )}
+            </>
+          )}
+        </Box>
+      </CardContent>
+    </Card>
+  );
+};
+
+const QuickActionCard = ({ title, description, icon, color, action, buttonText }) => (
+  <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <CardContent sx={{ flexGrow: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+        <Avatar sx={{ bgcolor: `${color}.main`, mr: 2 }}>
+          {icon}
+        </Avatar>
+        <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
+          {title}
+        </Typography>
       </Box>
-      <Typography variant="h4" component="div" sx={{ fontWeight: 'bold', mb: 1 }}>
-        {value}
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+        {description}
       </Typography>
-      <Typography variant="body2" color="text.secondary">
-        {title}
-      </Typography>
+      <Button
+        variant="contained"
+        fullWidth
+        startIcon={<AddIcon />}
+        onClick={action}
+        sx={{
+          mt: 'auto',
+          bgcolor: `${color}.main`,
+          '&:hover': {
+            bgcolor: `${color}.dark`
+          }
+        }}
+      >
+        {buttonText}
+      </Button>
     </CardContent>
   </Card>
 );
 
+const ActivityItem = ({ title, description, time, type, avatar }) => {
+  const getTypeColor = (type) => {
+    switch (type) {
+      case 'success': return 'success.main';
+      case 'warning': return 'warning.main';
+      case 'error': return 'error.main';
+      default: return 'primary.main';
+    }
+  };
+
+  const getTypeIcon = (type) => {
+    switch (type) {
+      case 'success': return <CheckCircleIcon />;
+      case 'warning': return <WarningIcon />;
+      case 'error': return <WarningIcon />;
+      default: return <NotificationsIcon />;
+    }
+  };
+
+  return (
+    <ListItem alignItems="flex-start" sx={{ py: 2 }}>
+      <ListItemAvatar>
+        <Avatar sx={{ bgcolor: getTypeColor(type) }}>
+          {avatar || getTypeIcon(type)}
+        </Avatar>
+      </ListItemAvatar>
+      <ListItemText
+        primary={
+          <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+            {title}
+          </Typography>
+        }
+        secondary={
+          <>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+              {description}
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              {time}
+            </Typography>
+          </>
+        }
+      />
+    </ListItem>
+  );
+};
+
 const Dashboard = () => {
+  const { user } = useAuth();
+  const theme = useTheme();
   const [connectionStatus, setConnectionStatus] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [statsLoading, setStatsLoading] = useState(true);
 
   useEffect(() => {
     checkConnection();
+    // Simular carga de estadísticas
+    setTimeout(() => {
+      setStatsLoading(false);
+    }, 1500);
   }, []);
 
   const checkConnection = async () => {
@@ -70,117 +228,65 @@ const Dashboard = () => {
   const stats = [
     {
       title: 'Total Docentes',
-      value: '24',
-      icon: <PeopleIcon sx={{ fontSize: 32 }} />,
+      value: '247',
+      icon: <PeopleIcon />,
       color: 'primary',
       trend: 12,
+      subtitle: 'Docentes registrados'
     },
     {
-      title: 'Convocatorias Activas',
-      value: '8',
-      icon: <WorkIcon sx={{ fontSize: 32 }} />,
+      title: 'Cursos Activos',
+      value: '18',
+      icon: <SchoolIcon />,
       color: 'success',
       trend: 25,
+      subtitle: 'Cursos disponibles'
     },
     {
-      title: 'Postulaciones',
-      value: '156',
-      icon: <AssignmentIcon sx={{ fontSize: 32 }} />,
+      title: 'Total Postulaciones',
+      value: '14',
+      icon: <AssignmentIcon />,
       color: 'warning',
       trend: 8,
+      subtitle: 'Total postulaciones'
     },
     {
-      title: 'Procesos Completados',
-      value: '12',
-      icon: <TrendingUpIcon sx={{ fontSize: 32 }} />,
+      title: 'Especialidades Registradas',
+      value: '98',
+      icon: <TrendingUpIcon />,
       color: 'info',
-      trend: 15,
+      trend: 5,
+      subtitle: 'Especialidades Registradas'
     },
   ];
 
   return (
     <Box>
-      <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
-        Dashboard - Sistema de Convocatorias
-      </Typography>
-      
-      <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-        Bienvenido al sistema de gestión de convocatorias docentes
-      </Typography>
-
-      {/* Estado de conexión */}
-      <Box sx={{ mb: 3 }}>
-        {loading ? (
-          <Box>
-            <Typography variant="body2" sx={{ mb: 1 }}>
-              Verificando conexión con la base de datos...
-            </Typography>
-            <LinearProgress />
-          </Box>
-        ) : connectionStatus ? (
-          <Alert
-            severity={connectionStatus.success ? 'success' : 'error'}
-            action={
-              <Button color="inherit" size="small" onClick={checkConnection}>
-                Reintentar
-              </Button>
-            }
-          >
-            {connectionStatus.message}
-          </Alert>
-        ) : null}
+      {/* Header de bienvenida */}
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h4" component="h1" sx={{ 
+          fontWeight: 'bold',
+          mb: 1,
+          background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+          backgroundClip: 'text',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent'
+        }}>
+          ¡Bienvenido de nuevo, {user?.nombre || 'Usuario'}! 👋
+        </Typography>
       </Box>
+
+ 
 
       {/* Tarjetas de estadísticas */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {stats.map((stat, index) => (
-          <Grid item xs={12} sm={6} md={3} key={index}>
-            <StatCard {...stat} />
+          <Grid item xs={12} sm={6} lg={3} key={index}>
+            <StatCard {...stat} loading={statsLoading} />
           </Grid>
         ))}
       </Grid>
 
-      {/* Secciones adicionales */}
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={8}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Actividad Reciente
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Aquí aparecerán las últimas actividades del sistema...
-              </Typography>
-              <Box sx={{ mt: 2 }}>
-                <Alert severity="info">
-                  🚀 Sistema listo para usar. Navega a "Docentes" para comenzar a gestionar los registros.
-                </Alert>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-        
-        <Grid item xs={12} md={4}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Acciones Rápidas
-              </Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Button variant="contained" fullWidth startIcon={<PeopleIcon />}>
-                  Agregar Docente
-                </Button>
-                <Button variant="outlined" fullWidth startIcon={<WorkIcon />}>
-                  Nueva Convocatoria
-                </Button>
-                <Button variant="outlined" fullWidth startIcon={<AssignmentIcon />}>
-                  Ver Reportes
-                </Button>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
     </Box>
   );
 };

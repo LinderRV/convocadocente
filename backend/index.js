@@ -11,8 +11,8 @@ const { testConnection } = require('./src/config/database');
 
 // Importar rutas
 const authRoutes = require('./src/routes/authRoutes');
-const docenteRoutes = require('./src/routes/docenteRoutes');
-const convocatoriaRoutes = require('./src/routes/convocatoriaRoutes');
+const usuariosRoutes = require('./src/routes/usuariosRoutes');
+const cursosRoutes = require('./src/routes/cursosRoutes');
 
 // Importar middleware personalizado
 const errorHandler = require('./src/middleware/errorHandler');
@@ -50,8 +50,8 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Rutas de la API
 app.use('/api/auth', authRoutes);
-app.use('/api/docentes', docenteRoutes);
-app.use('/api/convocatorias', convocatoriaRoutes);
+app.use('/api/usuarios', usuariosRoutes);
+app.use('/api/cursos', cursosRoutes);
 
 // Ruta de salud
 app.get('/api/health', (req, res) => {

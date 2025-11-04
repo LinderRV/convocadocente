@@ -106,28 +106,6 @@ export const convocatoriasAPI = {
   getApplications: (id, params = {}) => api.get(`/convocatorias/${id}/applications`, { params })
 };
 
-// API de docentes
-export const docentesAPI = {
-  // Obtener todos los docentes
-  getAll: (params = {}) => api.get('/docentes', { params }),
-  
-  // Obtener docente por ID
-  getById: (id) => api.get(`/docentes/${id}`),
-  
-  // Actualizar perfil de docente
-  updateProfile: (id, profileData) => api.put(`/docentes/${id}`, profileData),
-  
-  // Subir CV
-  uploadCV: (id, formData) => api.post(`/docentes/${id}/cv`, formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data'
-    }
-  }),
-  
-  // Obtener postulaciones del docente
-  getApplications: (id, params = {}) => api.get(`/docentes/${id}/applications`, { params })
-};
-
 // API de instituciones
 export const institucionesAPI = {
   // Obtener todas las instituciones
@@ -170,6 +148,18 @@ export const adminAPI = {
   updateConfiguration: (key, value) => api.put('/admin/configurations', { key, value })
 };
 
+// API de usuarios administrativos
+export const usuariosAPI = {
+  // Obtener usuarios administrativos con paginación y búsqueda
+  getAdministrativeUsers: (params = {}) => api.get('/usuarios/administrative', { params }),
+  
+  // Obtener usuario administrativo por ID
+  getAdministrativeUserById: (id) => api.get(`/usuarios/administrative/${id}`),
+  
+  // Cambiar estado de usuario (Activo/Inactivo)
+  toggleUserStatus: (id, estado) => api.patch(`/usuarios/administrative/${id}/status`, { estado })
+};
+
 // Función para verificar salud del servidor
 export const healthCheck = () => api.get('/health');
 
@@ -183,8 +173,5 @@ export const testConnection = async () => {
     return { success: false, error: error.message };
   }
 };
-
-// Alias para mantener compatibilidad con componentes
-export const docentesService = docentesAPI;
 
 export default api;
