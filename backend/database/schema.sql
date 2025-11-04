@@ -1,9 +1,5 @@
 
---
 -- Base de datos: `bd_convocadocente`
---
-
--- --------------------------------------------------------
 
 --
 -- Estructura de tabla para la tabla `docentes`
@@ -30,9 +26,7 @@ CREATE TABLE `docentes` (
 INSERT INTO `docentes` (`id`, `user_id`, `nombres`, `apellidos`, `dni`, `fecha_nacimiento`, `genero`, `pais`, `direccion`, `telefono`, `cv_archivo`) VALUES
 (1, 11, 'drmedicina', 'ROJAS PEREZ', '7563221', '1999-12-20', 'Masculino', 'Japón', 'av el muro o este', '912234934', 'cv_11_1762279121199.docx');
 
--- --------------------------------------------------------
 
---
 -- Estructura de tabla para la tabla `docente_cursos_interes`
 --
 
@@ -49,21 +43,29 @@ CREATE TABLE `docente_cursos_interes` (
 --
 
 INSERT INTO `docente_cursos_interes` (`id`, `user_id`, `plan_estudio_curso_id`, `fecha_registro`, `postulacion_id`) VALUES
-(2, 1, 1, '2025-10-31 05:13:52', NULL);
+(2, 1, 1, '2025-10-31 05:13:52', NULL),
+(3, 11, 3, '2025-11-04 23:45:29', NULL);
 
--- --------------------------------------------------------
 
---
 -- Estructura de tabla para la tabla `docente_horarios`
 --
 
 CREATE TABLE `docente_horarios` (
   `id` int NOT NULL,
   `user_id` bigint UNSIGNED NOT NULL,
-  `dia_semana` enum('Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `dia_semana` enum('Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `hora_inicio` time NOT NULL,
-  `hora_fin` time NOT NULL
+  `hora_fin` time NOT NULL,
+  `postulacion_id` int DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `docente_horarios`
+--
+
+INSERT INTO `docente_horarios` (`id`, `user_id`, `dia_semana`, `hora_inicio`, `hora_fin`, `postulacion_id`) VALUES
+(1, 11, 'Lunes', '10:40:00', '18:00:00', NULL),
+(2, 11, 'Jueves', '08:00:00', '20:41:00', NULL);
 
 -- --------------------------------------------------------
 
@@ -105,6 +107,15 @@ CREATE TABLE `experiencias_laborales` (
   `constancia_archivo` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Ruta del archivo de la constancia (uploads/experiencia/)'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Volcado de datos para la tabla `experiencias_laborales`
+--
+
+INSERT INTO `experiencias_laborales` (`id`, `user_id`, `pais`, `sector`, `empresa`, `ruc`, `cargo`, `fecha_inicio`, `fecha_fin`, `actual`, `sin_experiencia`, `constancia_archivo`) VALUES
+(1, 11, 'OLANDA', 'Privado', 'GLORIA', '12020123456', 'CAJERO', '2023-12-10', '2024-10-20', 0, 0, 'experiencia_11_1762295549229.pdf'),
+(2, 11, 'Argentina', 'Privado', 'Renic', '12345678965', 'Contador', '1999-02-10', '2001-02-20', 0, 0, 'experiencia_11_1762293790690.pdf'),
+(3, 11, 'Chile', 'Público', 'Universidad del Sur', '78945632152', 'Docente', '2025-02-20', NULL, 1, 0, 'experiencia_11_1762295587049.pdf');
+
 -- --------------------------------------------------------
 
 --
@@ -123,9 +134,7 @@ CREATE TABLE `facultades` (
 INSERT INTO `facultades` (`c_codfac`, `nom_fac`) VALUES
 ('S', 'CIENCIAS DE LA SALUD');
 
--- --------------------------------------------------------
 
---
 -- Estructura de tabla para la tabla `formaciones_academicas`
 --
 
@@ -140,9 +149,16 @@ CREATE TABLE `formaciones_academicas` (
   `documento_archivo` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Ruta del archivo del documento (uploads/formacion/)'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- --------------------------------------------------------
-
 --
+-- Volcado de datos para la tabla `formaciones_academicas`
+--
+
+INSERT INTO `formaciones_academicas` (`id`, `user_id`, `nivel_formacion`, `programa_academico`, `institucion`, `pais`, `fecha_obtencion`, `documento_archivo`) VALUES
+(1, 11, 'Maestría', 'SALUD PUBLICA', 'USENS', 'ESPAÑA', '2000-10-20', 'formacion_11_1762289915788.pdf'),
+(2, 11, 'Licenciatura', 'ENFERMERIA', 'NOTBERT WINNER', 'PERU', '2024-01-20', 'formacion_11_1762289907765.pdf'),
+(3, 11, 'Post-Doctorado', 'EN QUIROFANO', 'UNGENS', 'CHILE', '2024-02-20', 'formacion_11_1762290039781.pdf');
+
+
 -- Estructura de tabla para la tabla `plan_estudio_curso`
 --
 
@@ -162,11 +178,10 @@ CREATE TABLE `plan_estudio_curso` (
 --
 
 INSERT INTO `plan_estudio_curso` (`id`, `n_codplan`, `c_codfac`, `c_codesp`, `c_codcur`, `c_nomcur`, `n_ciclo`, `estado`) VALUES
-(1, 2023, 'S', 'S1', 'COUD002', 'Matemáticas', 1, 0);
+(1, 2023, 'S', 'S1', 'COUD002', 'Matemáticas', 1, 0),
+(3, 2023, 'S', 'S1', 'ESG0201', 'LIDERAZGO', NULL, 0);
 
--- --------------------------------------------------------
 
---
 -- Estructura de tabla para la tabla `postulaciones_cursos_especialidad`
 --
 
@@ -181,9 +196,14 @@ CREATE TABLE `postulaciones_cursos_especialidad` (
   `fecha_postulacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- --------------------------------------------------------
-
 --
+-- Volcado de datos para la tabla `postulaciones_cursos_especialidad`
+--
+
+INSERT INTO `postulaciones_cursos_especialidad` (`id`, `user_id`, `c_codfac`, `c_codesp`, `estado`, `mensaje_entrevista`, `evaluador_user_id`, `fecha_postulacion`) VALUES
+(1, 11, 'S', 'S1', 'PENDIENTE', NULL, 10, '2025-11-04 23:47:35');
+
+
 -- Estructura de tabla para la tabla `roles`
 --
 
@@ -203,9 +223,7 @@ INSERT INTO `roles` (`id`, `nombre`, `descripcion`, `estado`) VALUES
 (2, 'Decano', NULL, 1),
 (3, 'Director', NULL, 1);
 
--- --------------------------------------------------------
 
---
 -- Estructura de tabla para la tabla `usuarios`
 --
 
@@ -231,11 +249,9 @@ CREATE TABLE `usuarios` (
 INSERT INTO `usuarios` (`id`, `nombre`, `email`, `google_id`, `email_verified_at`, `password`, `remember_token`, `first_login`, `created_at`, `updated_at`, `last_login`, `estado`) VALUES
 (1, 'REVILLA', 'linder.revilla@uma.edu.pe', NULL, NULL, '$2a$12$RK2j2vNhN4zvRip3HpX6yOl4N1SW9mMxjCBTVPcOxIfSxTSzNxjHe', NULL, 1, '2025-11-03 21:03:45', '2025-11-04 16:44:14', '2025-11-04 16:44:14', 1),
 (10, 'James Pérez lima', 'james.perezlima@gmail.com', NULL, NULL, NULL, NULL, 1, '2025-11-03 22:11:22', '2025-11-04 04:57:07', '2025-11-04 04:57:07', 1),
-(11, 'drmedicina', 'docente@uma.edu.pe', NULL, NULL, '$2a$12$s9EYJIpBeId6kitxbAjehuFfUVdrVKNrn4LbaN75fN8lOeD1t8q0S', NULL, 1, '2025-11-04 03:21:34', '2025-11-04 19:35:46', '2025-11-04 19:35:46', 1);
+(11, 'drmedicina', 'docente@uma.edu.pe', NULL, NULL, '$2a$12$s9EYJIpBeId6kitxbAjehuFfUVdrVKNrn4LbaN75fN8lOeD1t8q0S', NULL, 1, '2025-11-04 03:21:34', '2025-11-04 23:12:27', '2025-11-04 23:12:27', 1);
 
--- --------------------------------------------------------
 
---
 -- Estructura de tabla para la tabla `usuario_especialidad`
 --
 
@@ -316,7 +332,8 @@ ALTER TABLE `docente_cursos_interes`
 --
 ALTER TABLE `docente_horarios`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `user_id` (`user_id`);
+  ADD KEY `docente_horarios_ibfk_1` (`user_id`),
+  ADD KEY `docente_horarios_ibfk_2` (`postulacion_id`);
 
 --
 -- Indices de la tabla `especialidades`
@@ -408,37 +425,37 @@ ALTER TABLE `docentes`
 -- AUTO_INCREMENT de la tabla `docente_cursos_interes`
 --
 ALTER TABLE `docente_cursos_interes`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de la tabla `docente_horarios`
 --
 ALTER TABLE `docente_horarios`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `experiencias_laborales`
 --
 ALTER TABLE `experiencias_laborales`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de la tabla `formaciones_academicas`
 --
 ALTER TABLE `formaciones_academicas`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de la tabla `plan_estudio_curso`
 --
 ALTER TABLE `plan_estudio_curso`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de la tabla `postulaciones_cursos_especialidad`
 --
 ALTER TABLE `postulaciones_cursos_especialidad`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `roles`
@@ -474,7 +491,8 @@ ALTER TABLE `docente_cursos_interes`
 -- Filtros para la tabla `docente_horarios`
 --
 ALTER TABLE `docente_horarios`
-  ADD CONSTRAINT `docente_horarios_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `docente_horarios_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `docente_horarios_ibfk_2` FOREIGN KEY (`postulacion_id`) REFERENCES `postulaciones_cursos_especialidad` (`id`) ON DELETE CASCADE;
 
 --
 -- Filtros para la tabla `especialidades`
