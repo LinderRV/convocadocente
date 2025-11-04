@@ -1,7 +1,5 @@
-
 -- Base de datos: `bd_convocadocente`
 
---
 -- Estructura de tabla para la tabla `docentes`
 --
 
@@ -43,8 +41,8 @@ CREATE TABLE `docente_cursos_interes` (
 --
 
 INSERT INTO `docente_cursos_interes` (`id`, `user_id`, `plan_estudio_curso_id`, `fecha_registro`, `postulacion_id`) VALUES
-(2, 1, 1, '2025-10-31 05:13:52', NULL),
-(3, 11, 3, '2025-11-04 23:45:29', NULL);
+(2, 1, 1, '2025-10-31 05:13:52', 1),
+(3, 11, 3, '2025-11-04 23:45:29', 1);
 
 
 -- Estructura de tabla para la tabla `docente_horarios`
@@ -64,12 +62,10 @@ CREATE TABLE `docente_horarios` (
 --
 
 INSERT INTO `docente_horarios` (`id`, `user_id`, `dia_semana`, `hora_inicio`, `hora_fin`, `postulacion_id`) VALUES
-(1, 11, 'Lunes', '10:40:00', '18:00:00', NULL),
-(2, 11, 'Jueves', '08:00:00', '20:41:00', NULL);
+(1, 11, 'Lunes', '10:40:00', '18:00:00', 1),
+(2, 11, 'Jueves', '08:00:00', '20:41:00', 1);
 
--- --------------------------------------------------------
 
---
 -- Estructura de tabla para la tabla `especialidades`
 --
 
@@ -86,9 +82,7 @@ CREATE TABLE `especialidades` (
 INSERT INTO `especialidades` (`c_codfac`, `c_codesp`, `nomesp`) VALUES
 ('S', 'S1', 'ENFERMERÍA');
 
--- --------------------------------------------------------
 
---
 -- Estructura de tabla para la tabla `experiencias_laborales`
 --
 
@@ -116,9 +110,7 @@ INSERT INTO `experiencias_laborales` (`id`, `user_id`, `pais`, `sector`, `empres
 (2, 11, 'Argentina', 'Privado', 'Renic', '12345678965', 'Contador', '1999-02-10', '2001-02-20', 0, 0, 'experiencia_11_1762293790690.pdf'),
 (3, 11, 'Chile', 'Público', 'Universidad del Sur', '78945632152', 'Docente', '2025-02-20', NULL, 1, 0, 'experiencia_11_1762295587049.pdf');
 
--- --------------------------------------------------------
 
---
 -- Estructura de tabla para la tabla `facultades`
 --
 
@@ -203,7 +195,9 @@ CREATE TABLE `postulaciones_cursos_especialidad` (
 INSERT INTO `postulaciones_cursos_especialidad` (`id`, `user_id`, `c_codfac`, `c_codesp`, `estado`, `mensaje_entrevista`, `evaluador_user_id`, `fecha_postulacion`) VALUES
 (1, 11, 'S', 'S1', 'PENDIENTE', NULL, 10, '2025-11-04 23:47:35');
 
+-- --------------------------------------------------------
 
+--
 -- Estructura de tabla para la tabla `roles`
 --
 
@@ -268,9 +262,7 @@ CREATE TABLE `usuario_especialidad` (
 INSERT INTO `usuario_especialidad` (`user_id`, `c_codfac`, `c_codesp`) VALUES
 (10, 'S', 'S1');
 
--- --------------------------------------------------------
 
---
 -- Estructura de tabla para la tabla `usuario_facultad`
 --
 
@@ -286,9 +278,7 @@ CREATE TABLE `usuario_facultad` (
 INSERT INTO `usuario_facultad` (`user_id`, `c_codfac`) VALUES
 (10, 'S');
 
--- --------------------------------------------------------
 
---
 -- Estructura de tabla para la tabla `usuario_roles`
 --
 
