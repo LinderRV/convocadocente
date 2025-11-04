@@ -148,13 +148,6 @@ const Layout = () => {
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
               {user?.email || 'usuario@ejemplo.com'}
             </Typography>
-            <Chip
-              label={user?.rol || 'Usuario'}
-              size="small"
-              color="primary"
-              variant="outlined"
-              sx={{ height: 20, fontSize: '0.7rem' }}
-            />
           </Box>
         </Box>
       </Box>
@@ -209,10 +202,10 @@ const Layout = () => {
       {/* Footer del drawer */}
       <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
         <Typography variant="caption" color="text.secondary" align="center" display="block">
-          ConvocaDocente v1.0
+          ConvocaDocente
         </Typography>
         <Typography variant="caption" color="text.secondary" align="center" display="block">
-          © 2024 - Sistema Profesional
+          © 2025 - Universidad Maria Auxiliadora
         </Typography>
       </Box>
     </Box>
@@ -252,11 +245,7 @@ const Layout = () => {
           </Typography>
 
           {/* Botones de acción */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <IconButton color="inherit">
-              <NotificationsIcon />
-            </IconButton>
-            
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>            
             <IconButton
               onClick={handleProfileMenuOpen}
               sx={{ ml: 1 }}
