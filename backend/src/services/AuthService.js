@@ -253,7 +253,7 @@ class AuthService {
     // Obtener perfil de usuario
     static async getProfile(userId) {
         try {
-            const user = await Usuario.findById(userId);
+            const user = await Usuario.findByIdWithRoles(userId);
             if (!user) {
                 throw new Error('Usuario no encontrado');
             }

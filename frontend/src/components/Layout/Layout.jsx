@@ -54,10 +54,27 @@ const Layout = () => {
   const [anchorEl, setAnchorEl] = useState(null);
 
   // Detectar si el usuario es docente o administrativo
+  // Docente: usuario SIN roles asignados
+  // Administrativo: usuario CON roles (Administrador, Decano, Director)
   const isDocente = !user?.roles || user?.roles.length === 0;
+  const isAdministrativo = user?.roles && user?.roles.length > 0;
+  
+  // Detectar roles específicos
+  const isAdministrador = user?.roles?.includes('Administrador');
+  const isDecano = user?.roles?.includes('Decano');
+  const isDirector = user?.roles?.includes('Director');
 
-  // Elementos del menú lateral para ADMINISTRATIVOS
-  const menuItemsAdmin = [
+  // Debug: Log para verificar roles
+  console.log('🔍 Usuario actual:', user);
+  console.log('👤 Roles del usuario:', user?.roles);
+  console.log('📝 Es Docente:', isDocente);
+  console.log('⚡ Es Administrativo:', isAdministrativo);
+  console.log('👑 Es Administrador:', isAdministrador);
+  console.log('🏛️ Es Decano:', isDecano);
+  console.log('🎯 Es Director:', isDirector);
+
+  // Elementos del menú lateral para ADMINISTRADOR y DECANO
+  const menuItemsAdminGeneral = [
     {
       text: 'Inicio',
       icon: <DashboardIcon />,
@@ -78,7 +95,23 @@ const Layout = () => {
     }
   ];
 
-  // Elementos del menú lateral para DOCENTES
+  // Elementos del menú lateral para DIRECTOR (solo gestión de cursos)
+  const menuItemsDirector = [
+    {
+      text: 'Mi Dashboard',
+      icon: <DashboardIcon />,
+      path: '/director/dashboard',
+      description: 'Panel director'
+    },
+    {
+      text: 'Lista Cursos',
+      icon: <SchoolIcon />,
+      path: '/cursos',
+      description: 'Gestión de cursos'
+    }
+  ];
+
+  // Elementos del menú lateral para DOCENTES (usuarios sin roles)
   const menuItemsDocente = [
     {
       text: 'Mi Dashboard',
@@ -119,7 +152,12 @@ const Layout = () => {
   ];
 
   // Seleccionar menú según tipo de usuario
-  const menuItems = isDocente ? menuItemsDocente : menuItemsAdmin;
+  // Docentes: menú docente
+  // Director: menú específico solo con cursos
+  // Administrador y Decano: menú completo administrativo
+  const menuItems = isDocente ? menuItemsDocente : 
+                   isDirector ? menuItemsDirector : 
+                   menuItemsAdminGeneral;
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -165,7 +203,9 @@ const Layout = () => {
             ConvocaDocente
           </Typography>
           <Typography variant="caption" sx={{ opacity: 0.8 }}>
-            {isDocente ? 'Portal Docente' : 'Sistema de Gestión'}
+            {isDocente ? 'Portal Docente' : 
+             isDirector ? 'Portal Director' : 
+             'Portal Administrativo'}
           </Typography>
         </Box>
         {isMobile && (
@@ -201,9 +241,17 @@ const Layout = () => {
               {user?.email || 'usuario@ejemplo.com'}
             </Typography>
             <Chip 
-              label={isDocente ? 'Docente' : 'Administrador'} 
+              label={
+                isDocente ? 'Docente' : 
+                isDirector ? 'Director' :
+                isAdministrador ? 'Administrador' :
+                isDecano ? 'Decano' :
+                isAdministrativo ? (
+                  user?.roles?.[0] || 'Administrativo'
+                ) : 'Usuario'
+              } 
               size="small" 
-              color={isDocente ? 'primary' : 'secondary'}
+              color={isDocente ? 'primary' : isDirector ? 'warning' : 'secondary'}
               variant="outlined"
             />
           </Box>

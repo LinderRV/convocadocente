@@ -14,7 +14,9 @@ class CursosController {
       const pageNum = Math.max(1, parseInt(page));
       const limitNum = Math.min(100, Math.max(1, parseInt(limit))); // Máximo 100 items por página
       
-      const result = await Curso.findAllCursos(pageNum, limitNum, search);
+      const userId = req.user.id;
+      
+      const result = await Curso.findAllCursos(pageNum, limitNum, search, userId);
       
       res.json({
         success: true,
@@ -95,6 +97,7 @@ class CursosController {
   static async toggleCursoStatus(req, res) {
     try {
       const { id } = req.params;
+      const userId = req.user.id;
       
       if (!id || isNaN(id)) {
         return res.status(400).json({
@@ -103,13 +106,13 @@ class CursosController {
         });
       }
       
-      // Primero obtener el curso actual
-      const cursoActual = await Curso.findById(parseInt(id));
+      // Primero obtener el curso actual y verificar que pertenece a la especialidad del director
+      const cursoActual = await Curso.findByIdForUser(parseInt(id), userId);
       
       if (!cursoActual) {
         return res.status(404).json({
           success: false,
-          message: 'Curso no encontrado'
+          message: 'Curso no encontrado o no tienes permisos para modificarlo'
         });
       }
       

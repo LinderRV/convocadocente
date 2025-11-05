@@ -2,7 +2,7 @@ const { pool } = require('../config/database');
 
 class Curso {
   // Obtener todos los cursos del plan de estudios
-  static async findAllCursos(page = 1, limit = 10, search = '') {
+  static async findAllCursos(page = 1, limit = 10, search = '', userId = null) {
     try {
       const offset = (page - 1) * limit;
       
@@ -12,40 +12,67 @@ class Curso {
       
       let whereClause = '';
       let queryParams = [];
+      let joinClause = '';
+      
+      // Si se proporciona userId, verificar si es Director y filtrar por su especialidad
+      if (userId) {
+        // Verificar si el usuario es Director
+        const [userRoles] = await pool.execute(`
+          SELECT r.nombre as rol_nombre
+          FROM usuarios u
+          INNER JOIN usuario_roles ur ON u.id = ur.user_id
+          INNER JOIN roles r ON ur.role_id = r.id
+          WHERE u.id = ?
+        `, [userId]);
+        
+        const isDirector = userRoles.some(role => role.rol_nombre === 'Director');
+        
+        if (isDirector) {
+          // Si es Director, filtrar por su especialidad
+          joinClause = `
+            INNER JOIN usuario_especialidad ue ON ue.c_codfac = p.c_codfac AND ue.c_codesp = p.c_codesp
+          `;
+          whereClause = 'WHERE ue.user_id = ?';
+          queryParams.push(userId);
+        }
+      }
       
       if (search && search.trim() !== '') {
-        whereClause = `WHERE 
-          c_codcur LIKE ? OR 
-          c_nomcur LIKE ? OR 
-          CAST(n_codplan AS CHAR) LIKE ? OR 
-          c_codfac LIKE ? OR 
-          c_codesp LIKE ? OR 
-          CAST(n_ciclo AS CHAR) LIKE ?`;
+        const searchCondition = `${whereClause ? 'AND' : 'WHERE'} (
+          p.c_codcur LIKE ? OR 
+          p.c_nomcur LIKE ? OR 
+          CAST(p.n_codplan AS CHAR) LIKE ? OR 
+          p.c_codfac LIKE ? OR 
+          p.c_codesp LIKE ? OR 
+          CAST(p.n_ciclo AS CHAR) LIKE ?)`;
+        whereClause += ` ${searchCondition}`;
         const searchPattern = `%${search.trim()}%`;
-        queryParams = [searchPattern, searchPattern, searchPattern, searchPattern, searchPattern, searchPattern];
+        queryParams.push(searchPattern, searchPattern, searchPattern, searchPattern, searchPattern, searchPattern);
       }
       
       // Query para obtener los cursos con paginación
       const cursosQuery = `
         SELECT 
-          id,
-          n_codplan,
-          c_codfac,
-          c_codesp,
-          c_codcur,
-          c_nomcur,
-          n_ciclo,
-          estado
-        FROM plan_estudio_curso 
+          p.id,
+          p.n_codplan,
+          p.c_codfac,
+          p.c_codesp,
+          p.c_codcur,
+          p.c_nomcur,
+          p.n_ciclo,
+          p.estado
+        FROM plan_estudio_curso p
+        ${joinClause}
         ${whereClause}
-        ORDER BY n_codplan DESC, n_ciclo ASC, c_nomcur ASC
+        ORDER BY p.n_codplan DESC, p.n_ciclo ASC, p.c_nomcur ASC
         LIMIT ? OFFSET ?
       `;
       
       // Query para contar el total
       const countQuery = `
         SELECT COUNT(*) as total 
-        FROM plan_estudio_curso 
+        FROM plan_estudio_curso p
+        ${joinClause}
         ${whereClause}
       `;
       
@@ -123,6 +150,35 @@ class Curso {
       
     } catch (error) {
       console.error('Error en updateCursoStatus:', error);
+      throw error;
+    }
+  }
+
+  // Obtener un curso por ID verificando que pertenece a la especialidad del usuario
+  static async findByIdForUser(id, userId) {
+    try {
+      const query = `
+        SELECT 
+          p.id,
+          p.n_codplan,
+          p.c_codfac,
+          p.c_codesp,
+          p.c_codcur,
+          p.c_nomcur,
+          p.n_ciclo,
+          p.estado
+        FROM plan_estudio_curso p
+        INNER JOIN usuario_especialidad ue ON ue.c_codfac = p.c_codfac AND ue.c_codesp = p.c_codesp
+        INNER JOIN usuario_roles ur ON ur.user_id = ue.user_id
+        INNER JOIN roles r ON r.id = ur.role_id
+        WHERE p.id = ? AND ue.user_id = ? AND r.nombre = 'Director'
+      `;
+      
+      const [result] = await pool.execute(query, [id, userId]);
+      return result[0] || null;
+      
+    } catch (error) {
+      console.error('Error en findByIdForUser:', error);
       throw error;
     }
   }

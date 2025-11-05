@@ -149,13 +149,25 @@ export const AuthProvider = ({ children }) => {
     if (!user?.roles || user.roles.length === 0) {
       return '/docente/dashboard';
     }
-    // Si tiene roles = ADMINISTRATIVO
+    
+    // Si es Director = Dashboard específico de Director
+    if (user.roles.includes('Director')) {
+      return '/director/dashboard';
+    }
+    
+    // Si es Administrador o Decano = Dashboard administrativo general
     return '/dashboard';
   };
 
   // Función para detectar tipo de usuario
   const getUserType = (user) => {
-    return (!user?.roles || user.roles.length === 0) ? 'docente' : 'admin';
+    if (!user?.roles || user.roles.length === 0) {
+      return 'docente';
+    }
+    if (user.roles.includes('Director')) {
+      return 'director';
+    }
+    return 'admin';
   };
 
   // Función para iniciar sesión

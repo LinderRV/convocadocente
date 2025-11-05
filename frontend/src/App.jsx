@@ -23,6 +23,9 @@ import ExperienciasPage from './pages/docentes/ExperienciasPage';
 import CrearPostulacionPage from './pages/docentes/CrearPostulacionPage';
 import PostulacionesPage from './pages/docentes/PostulacionesPage';
 
+// Pages Directores
+import DashboardDirector from './components/directores/DashboardDirector';
+
 // Theme
 import { theme } from './theme/theme';
 
@@ -61,6 +64,9 @@ function App() {
               <Route path="docente/experiencias" element={<ExperienciasPage />} />
               <Route path="docente/crearpostulacion" element={<CrearPostulacionPage />} />
               <Route path="docente/postulaciones" element={<PostulacionesPage />} />
+              
+              {/* Rutas para DIRECTORES */}
+              <Route path="director/dashboard" element={<DashboardDirector />} />
               
               {/* Rutas para administradores */}
               <Route path="admin/*" element={
