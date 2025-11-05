@@ -118,6 +118,17 @@ const CrearPostulacionPage = () => {
 
   const diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
+  // Verificar si ya existe postulación para la especialidad
+  const verificarPostulacionExistente = async (c_codfac, c_codesp) => {
+    try {
+      const response = await postulacionAPI.verificarPostulacion(c_codfac, c_codesp);
+      return response.data;
+    } catch (error) {
+      console.error('Error al verificar postulación:', error);
+      return { puede_postular: true, postulacion_existente: null };
+    }
+  };
+
   // Manejar cambio de facultad - REINICIA TODO
   const handleFacultadChange = async (nuevaFacultad) => {
     setFacultadSeleccionada(nuevaFacultad);
@@ -286,10 +297,22 @@ const CrearPostulacionPage = () => {
       return;
     }
 
-    // Crear postulación en el backend
+    // Verificar si ya existe una postulación para esta especialidad
     try {
       setLoading(true);
       
+      const verificacion = await verificarPostulacionExistente(facultadSeleccionada, especialidadSeleccionada);
+      
+      if (!verificacion.puede_postular) {
+        setAlert({ 
+          type: 'warning', 
+          message: '⚠️ Ya te has postulado a esta especialidad. Solo puedes tener una postulación activa por especialidad.'
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Crear postulación en el backend
       const postulacionData = {
         c_codfac: facultadSeleccionada,
         c_codesp: especialidadSeleccionada,
@@ -321,16 +344,33 @@ const CrearPostulacionPage = () => {
         });
         setCursosInteres([]);
       } else {
+        // Mensaje específico para postulación duplicada
+        const mensaje = response.message || 'Error al crear la postulación';
+        const esPostulacionDuplicada = mensaje.includes('postulación activa') || 
+                                       mensaje.includes('Ya tienes una postulación') ||
+                                       mensaje.includes('duplicada');
+        
         setAlert({ 
-          type: 'error', 
-          message: response.message || 'Error al crear la postulación' 
+          type: 'warning', 
+          message: esPostulacionDuplicada ? 
+            '⚠️ Ya te has postulado a esta especialidad. Solo puedes tener una postulación activa por especialidad.' : 
+            mensaje
         });
       }
     } catch (error) {
       console.error('Error al crear postulación:', error);
+      
+      // Verificar si es error de postulación duplicada
+      const errorMessage = error.message || '';
+      const esPostulacionDuplicada = errorMessage.includes('postulación activa') || 
+                                     errorMessage.includes('Ya tienes una postulación') ||
+                                     errorMessage.includes('400');
+      
       setAlert({ 
-        type: 'error', 
-        message: 'Error al crear la postulación. Por favor intente nuevamente.' 
+        type: esPostulacionDuplicada ? 'warning' : 'error',
+        message: esPostulacionDuplicada ? 
+          '⚠️ Ya te has postulado a esta especialidad. Solo puedes tener una postulación activa por especialidad.' :
+          'Error al crear la postulación. Por favor intente nuevamente.'
       });
     } finally {
       setLoading(false);

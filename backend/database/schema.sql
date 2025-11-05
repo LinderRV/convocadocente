@@ -170,8 +170,8 @@ CREATE TABLE `plan_estudio_curso` (
 --
 
 INSERT INTO `plan_estudio_curso` (`id`, `n_codplan`, `c_codfac`, `c_codesp`, `c_codcur`, `c_nomcur`, `n_ciclo`, `estado`) VALUES
-(1, 2023, 'S', 'S1', 'COUD002', 'Matemáticas', 1, 0),
-(3, 2023, 'S', 'S1', 'ESG0201', 'LIDERAZGO', NULL, 0);
+(1, 2023, 'S', 'S1', 'COUD002', 'Matemáticas', 1, 1),
+(3, 2023, 'S', 'S1', 'ESG0201', 'LIDERAZGO', NULL, 1);
 
 
 -- Estructura de tabla para la tabla `postulaciones_cursos_especialidad`
