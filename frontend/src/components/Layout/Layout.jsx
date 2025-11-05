@@ -36,6 +36,7 @@ import {
   Work as WorkIcon,
   Schedule as ScheduleIcon,
   Assignment as AssignmentIcon,
+  PostAdd as PostulacionIcon,
   Favorite as FavoriteIcon,
   CalendarToday as CalendarIcon
 } from '@mui/icons-material';
@@ -92,6 +93,12 @@ const Layout = () => {
       icon: <SchoolIcon />,
       path: '/cursos',
       description: 'Gestión de cursos'
+    },
+    {
+      text: 'Lista Postulaciones',
+      icon: <PostulacionIcon />,
+      path: '/postulaciones',
+      description: 'Gestión de Postulaciones'
     }
   ];
 

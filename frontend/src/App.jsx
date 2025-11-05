@@ -13,7 +13,9 @@ import Layout from './components/Layout/Layout';
 import Dashboard from './components/Dashboard/Dashboard';
 import UsuariosPage from './pages/UsuariosPage';
 import CursosPage from './pages/CursosPage';
+import PostulacionesPage from './pages/PostulacionesPage';
 import LoginPage from './pages/LoginPage';
+import UnauthorizedPage from './pages/UnauthorizedPage';
 
 // Pages Docentes
 import DashboardDocente from './components/docentes/DashboardDocente';
@@ -21,7 +23,7 @@ import PerfilDocentePage from './pages/docentes/PerfilDocentePage';
 import FormacionesPage from './pages/docentes/FormacionesPage';
 import ExperienciasPage from './pages/docentes/ExperienciasPage';
 import CrearPostulacionPage from './pages/docentes/CrearPostulacionPage';
-import PostulacionesPage from './pages/docentes/PostulacionesPage';
+import PostulacionesDocentePage from './pages/docentes/PostulacionesDocentePage';
 
 // Pages Directores
 import DashboardDirector from './components/directores/DashboardDirector';
@@ -49,24 +51,69 @@ function App() {
                 <Layout />
               </ProtectedRoute>
             }>
-              <Route index element={<Dashboard />} />
-              <Route path="dashboard" element={<Dashboard />} />
-              <Route path="usuarios" element={<UsuariosPage />} />
+              <Route index element={
+                <ProtectedRoute allowedRoles={['admin', 'decano']}>
+                  <Dashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="dashboard" element={
+                <ProtectedRoute allowedRoles={['admin', 'decano']}>
+                  <Dashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="usuarios" element={
+                <ProtectedRoute allowedRoles={['admin', 'decano']}>
+                  <UsuariosPage />
+                </ProtectedRoute>
+              } />
               <Route path="cursos" element={<CursosPage />} />
+              <Route path="postulaciones" element={
+                <ProtectedRoute allowedRoles={['admin', 'decano']}>
+                  <PostulacionesPage />
+                </ProtectedRoute>
+              } />
               <Route path="convocatorias" element={<div>Convocatorias</div>} />
               <Route path="perfil" element={<div>Perfil</div>} />
               <Route path="configuracion" element={<div>Configuración</div>} />
               
               {/* Rutas para DOCENTES */}
-              <Route path="docente/dashboard" element={<DashboardDocente />} />
-              <Route path="docente/perfil" element={<PerfilDocentePage />} />
-              <Route path="docente/formaciones" element={<FormacionesPage />} />
-              <Route path="docente/experiencias" element={<ExperienciasPage />} />
-              <Route path="docente/crearpostulacion" element={<CrearPostulacionPage />} />
-              <Route path="docente/postulaciones" element={<PostulacionesPage />} />
+              <Route path="docente/dashboard" element={
+                <ProtectedRoute allowedRoles={['docente']}>
+                  <DashboardDocente />
+                </ProtectedRoute>
+              } />
+              <Route path="docente/perfil" element={
+                <ProtectedRoute allowedRoles={['docente']}>
+                  <PerfilDocentePage />
+                </ProtectedRoute>
+              } />
+              <Route path="docente/formaciones" element={
+                <ProtectedRoute allowedRoles={['docente']}>
+                  <FormacionesPage />
+                </ProtectedRoute>
+              } />
+              <Route path="docente/experiencias" element={
+                <ProtectedRoute allowedRoles={['docente']}>
+                  <ExperienciasPage />
+                </ProtectedRoute>
+              } />
+              <Route path="docente/crearpostulacion" element={
+                <ProtectedRoute allowedRoles={['docente']}>
+                  <CrearPostulacionPage />
+                </ProtectedRoute>
+              } />
+              <Route path="docente/postulaciones" element={
+                <ProtectedRoute allowedRoles={['docente']}>
+                  <PostulacionesDocentePage />
+                </ProtectedRoute>
+              } />
               
               {/* Rutas para DIRECTORES */}
-              <Route path="director/dashboard" element={<DashboardDirector />} />
+              <Route path="director/dashboard" element={
+                <ProtectedRoute allowedRoles={['director']}>
+                  <DashboardDirector />
+                </ProtectedRoute>
+              } />
               
               {/* Rutas para administradores */}
               <Route path="admin/*" element={
@@ -84,7 +131,7 @@ function App() {
             </Route>
             
             {/* Rutas de error */}
-            <Route path="/unauthorized" element={<div>No autorizado</div>} />
+            <Route path="/unauthorized" element={<UnauthorizedPage />} />
             <Route path="*" element={<div>Página no encontrada</div>} />
           </Routes>
         </Router>

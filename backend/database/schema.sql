@@ -183,7 +183,7 @@ CREATE TABLE `postulaciones_cursos_especialidad` (
   `c_codfac` char(3) COLLATE utf8mb4_unicode_ci NOT NULL,
   `c_codesp` char(2) COLLATE utf8mb4_unicode_ci NOT NULL,
   `estado` enum('PENDIENTE','EVALUANDO','APROBADO','RECHAZADO') COLLATE utf8mb4_unicode_ci DEFAULT 'PENDIENTE',
-  `mensaje_entrevista` text COLLATE utf8mb4_unicode_ci COMMENT 'Mensaje del director al docente solo si es APROBADO',
+  `comentario_evaluacion` text COLLATE utf8mb4_unicode_ci COMMENT 'Mensaje del  Administrador o Director que evalúa la postulación',
   `evaluador_user_id` bigint UNSIGNED DEFAULT NULL,
   `fecha_postulacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -192,7 +192,7 @@ CREATE TABLE `postulaciones_cursos_especialidad` (
 -- Volcado de datos para la tabla `postulaciones_cursos_especialidad`
 --
 
-INSERT INTO `postulaciones_cursos_especialidad` (`id`, `user_id`, `c_codfac`, `c_codesp`, `estado`, `mensaje_entrevista`, `evaluador_user_id`, `fecha_postulacion`) VALUES
+INSERT INTO `postulaciones_cursos_especialidad` (`id`, `user_id`, `c_codfac`, `c_codesp`, `estado`, `comentario_evaluacion`, `evaluador_user_id`, `fecha_postulacion`) VALUES
 (1, 11, 'S', 'S1', 'PENDIENTE', NULL, 10, '2025-11-04 23:47:35');
 
 -- --------------------------------------------------------
