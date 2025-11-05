@@ -20,7 +20,7 @@ import DashboardDocente from './components/docentes/DashboardDocente';
 import PerfilDocentePage from './pages/docentes/PerfilDocentePage';
 import FormacionesPage from './pages/docentes/FormacionesPage';
 import ExperienciasPage from './pages/docentes/ExperienciasPage';
-import HorariosPage from './pages/docentes/HorariosPage';
+import CrearPostulacionPage from './pages/docentes/CrearPostulacionPage';
 import PostulacionesPage from './pages/docentes/PostulacionesPage';
 
 // Theme
@@ -59,7 +59,7 @@ function App() {
               <Route path="docente/perfil" element={<PerfilDocentePage />} />
               <Route path="docente/formaciones" element={<FormacionesPage />} />
               <Route path="docente/experiencias" element={<ExperienciasPage />} />
-              <Route path="docente/horarios" element={<HorariosPage />} />
+              <Route path="docente/crearpostulacion" element={<CrearPostulacionPage />} />
               <Route path="docente/postulaciones" element={<PostulacionesPage />} />
               
               {/* Rutas para administradores */}

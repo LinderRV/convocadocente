@@ -105,13 +105,13 @@ const Layout = () => {
       description: 'Experiencias laborales'
     },
     {
-      text: 'Mis Horarios',
+      text: 'Postular',
       icon: <ScheduleIcon />,
-      path: '/docente/horarios',
-      description: 'Disponibilidad horaria'
+      path: '/docente/crearpostulacion',
+      description: 'cursos de interes y disponiblidad horaria'
     },
     {
-      text: 'Postulaciones',
+      text: 'Mis Postulaciones',
       icon: <AssignmentIcon />,
       path: '/docente/postulaciones',
       description: 'Mis postulaciones'

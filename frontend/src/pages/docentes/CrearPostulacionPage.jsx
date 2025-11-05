@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -21,7 +21,8 @@ import {
   List,
   ListItem,
   ListItemText,
-  Divider
+  Divider,
+  CircularProgress
 } from '@mui/material';
 import {
   Schedule as ScheduleIcon,
@@ -30,9 +31,16 @@ import {
   Category as CategoryIcon,
   ExpandMore as ExpandMoreIcon
 } from '@mui/icons-material';
+import { postulacionAPI } from '../../services/postulacionAPI';
 
-const HorariosPage = () => {
+const CrearPostulacionPage = () => {
   const [alert, setAlert] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  // Datos del backend
+  const [facultades, setFacultades] = useState([]);
+  const [especialidades, setEspecialidades] = useState([]);
+  const [cursos, setCursos] = useState([]);
 
   // Jerarquía de selección
   const [facultadSeleccionada, setFacultadSeleccionada] = useState('');
@@ -52,78 +60,70 @@ const HorariosPage = () => {
   // Cursos de interés seleccionados
   const [cursosInteres, setCursosInteres] = useState([]);
 
-  // Datos mock - JERARQUÍA CORRECTA
-  const facultadesDisponibles = [
-    { c_codfac: 'S', nom_fac: 'CIENCIAS DE LA SALUD' },
-    { c_codfac: 'M', nom_fac: 'MEDICINA' },
-    { c_codfac: 'I', nom_fac: 'INGENIERÍA' },
-    { c_codfac: 'A', nom_fac: 'ADMINISTRACIÓN' }
-  ];
+  // Cargar facultades al montar el componente
+  useEffect(() => {
+    cargarFacultades();
+  }, []);
 
-  const especialidadesPorFacultad = {
-    'S': [
-      { c_codesp: 'S1', nomesp: 'ENFERMERÍA' },
-      { c_codesp: 'S2', nomesp: 'OBSTETRICIA' }
-    ],
-    'M': [
-      { c_codesp: 'M1', nomesp: 'CARDIOLOGÍA' },
-      { c_codesp: 'M2', nomesp: 'MEDICINA INTERNA' },
-      { c_codesp: 'M3', nomesp: 'NEUROLOGÍA' }
-    ],
-    'I': [
-      { c_codesp: 'I1', nomesp: 'SISTEMAS' },
-      { c_codesp: 'I2', nomesp: 'INDUSTRIAL' },
-      { c_codesp: 'I3', nomesp: 'CIVIL' }
-    ],
-    'A': [
-      { c_codesp: 'A1', nomesp: 'ADMINISTRACIÓN' },
-      { c_codesp: 'A2', nomesp: 'CONTABILIDAD' }
-    ]
+  const cargarFacultades = async () => {
+    try {
+      setLoading(true);
+      const response = await postulacionAPI.getFacultades();
+      if (response.success) {
+        setFacultades(response.data);
+      } else {
+        setAlert({ type: 'error', message: response.message || 'Error al cargar facultades' });
+      }
+    } catch (error) {
+      console.error('Error al cargar facultades:', error);
+      setAlert({ type: 'error', message: 'Error al cargar facultades' });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Cursos por especialidad específica (plan_estudio_curso)
-  const cursosPorEspecialidad = {
-    'S-S1': [ // CIENCIAS DE LA SALUD - ENFERMERÍA
-      { id: 1, c_nomcur: 'Anatomía y Fisiología Humana' },
-      { id: 2, c_nomcur: 'Fundamentos de Enfermería' },
-      { id: 3, c_nomcur: 'Farmacología en Enfermería' },
-      { id: 4, c_nomcur: 'Cuidados Intensivos' }
-    ],
-    'S-S2': [ // CIENCIAS DE LA SALUD - OBSTETRICIA
-      { id: 5, c_nomcur: 'Obstetricia Básica' },
-      { id: 6, c_nomcur: 'Ginecología Clínica' },
-      { id: 7, c_nomcur: 'Atención Prenatal' }
-    ],
-    'M-M1': [ // MEDICINA - CARDIOLOGÍA
-      { id: 8, c_nomcur: 'Cardiología Intervencional Avanzada' },
-      { id: 9, c_nomcur: 'Ecocardiografía Diagnóstica' },
-      { id: 10, c_nomcur: 'Farmacología Cardiovascular' },
-      { id: 11, c_nomcur: 'Urgencias Cardiológicas' }
-    ],
-    'M-M2': [ // MEDICINA - MEDICINA INTERNA
-      { id: 12, c_nomcur: 'Medicina Interna General' },
-      { id: 13, c_nomcur: 'Endocrinología Clínica' },
-      { id: 14, c_nomcur: 'Gastroenterología' }
-    ],
-    'I-I1': [ // INGENIERÍA - SISTEMAS
-      { id: 15, c_nomcur: 'Programación Avanzada' },
-      { id: 16, c_nomcur: 'Base de Datos' },
-      { id: 17, c_nomcur: 'Ingeniería de Software' },
-      { id: 18, c_nomcur: 'Redes de Computadores' }
-    ],
-    'A-A1': [ // ADMINISTRACIÓN - ADMINISTRACIÓN
-      { id: 19, c_nomcur: 'Gestión Estratégica' },
-      { id: 20, c_nomcur: 'Marketing Digital' },
-      { id: 21, c_nomcur: 'Recursos Humanos' }
-    ]
+  const cargarEspecialidades = async (c_codfac) => {
+    try {
+      setLoading(true);
+      const response = await postulacionAPI.getEspecialidadesByFacultad(c_codfac);
+      if (response.success) {
+        setEspecialidades(response.data);
+      } else {
+        setAlert({ type: 'error', message: response.message || 'Error al cargar especialidades' });
+      }
+    } catch (error) {
+      console.error('Error al cargar especialidades:', error);
+      setAlert({ type: 'error', message: 'Error al cargar especialidades' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const cargarCursos = async (c_codfac, c_codesp) => {
+    try {
+      setLoading(true);
+      const response = await postulacionAPI.getCursosByEspecialidad(c_codfac, c_codesp);
+      if (response.success) {
+        setCursos(response.data);
+      } else {
+        setAlert({ type: 'error', message: response.message || 'Error al cargar cursos' });
+      }
+    } catch (error) {
+      console.error('Error al cargar cursos:', error);
+      setAlert({ type: 'error', message: 'Error al cargar cursos' });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
   // Manejar cambio de facultad - REINICIA TODO
-  const handleFacultadChange = (nuevaFacultad) => {
+  const handleFacultadChange = async (nuevaFacultad) => {
     setFacultadSeleccionada(nuevaFacultad);
     setEspecialidadSeleccionada(''); // Reset especialidad
+    setEspecialidades([]); // Limpiar especialidades
+    setCursos([]); // Limpiar cursos
     
     // Limpiar horarios
     setHorarios({
@@ -139,15 +139,20 @@ const HorariosPage = () => {
     // Limpiar cursos de interés
     setCursosInteres([]);
     
-    setAlert({ 
-      type: 'info', 
-      message: 'Facultad cambiada. Selecciona una especialidad y configura nuevamente.' 
-    });
+    // Cargar especialidades de la nueva facultad
+    if (nuevaFacultad) {
+      await cargarEspecialidades(nuevaFacultad);
+      setAlert({ 
+        type: 'info', 
+        message: 'Facultad seleccionada. Ahora elige una especialidad.' 
+      });
+    }
   };
 
   // Manejar cambio de especialidad - REINICIA horarios y cursos
-  const handleEspecialidadChange = (nuevaEspecialidad) => {
+  const handleEspecialidadChange = async (nuevaEspecialidad) => {
     setEspecialidadSeleccionada(nuevaEspecialidad);
+    setCursos([]); // Limpiar cursos previos
     
     // Limpiar horarios
     setHorarios({
@@ -163,10 +168,14 @@ const HorariosPage = () => {
     // Limpiar cursos de interés
     setCursosInteres([]);
     
-    setAlert({ 
-      type: 'info', 
-      message: 'Especialidad cambiada. Configura tus horarios y cursos de interés.' 
-    });
+    // Cargar cursos de la nueva especialidad
+    if (nuevaEspecialidad && facultadSeleccionada) {
+      await cargarCursos(facultadSeleccionada, nuevaEspecialidad);
+      setAlert({ 
+        type: 'info', 
+        message: 'Especialidad seleccionada. Configura tus horarios y elige cursos de interés.' 
+      });
+    }
   };
 
   // Manejar selección/deselección de curso
@@ -188,20 +197,8 @@ const HorariosPage = () => {
 
   // Obtener curso por ID
   const getCursoById = (id) => {
-    for (const key in cursosPorEspecialidad) {
-      const curso = cursosPorEspecialidad[key].find(c => c.id === id);
-      if (curso) return curso;
-    }
-    return null;
+    return cursos.find(c => c.id === id) || null;
   };
-
-  // Obtener especialidades filtradas por facultad
-  const especialidadesFiltradas = facultadSeleccionada ? 
-    especialidadesPorFacultad[facultadSeleccionada] || [] : [];
-
-  // Obtener cursos de la especialidad seleccionada
-  const cursosDisponibles = facultadSeleccionada && especialidadSeleccionada ? 
-    cursosPorEspecialidad[`${facultadSeleccionada}-${especialidadSeleccionada}`] || [] : [];
 
   // Manejar cambio de checkbox
   const handleCheckboxChange = (dia) => {
@@ -229,7 +226,7 @@ const HorariosPage = () => {
   };
 
   // Guardar todos los horarios y cursos
-  const handleGuardar = () => {
+  const handleGuardar = async () => {
     if (!facultadSeleccionada || !especialidadSeleccionada) {
       setAlert({ 
         type: 'error', 
@@ -289,23 +286,55 @@ const HorariosPage = () => {
       return;
     }
 
-    // TODO: Aquí enviar datos al backend
-    const facultad = facultadesDisponibles.find(f => f.c_codfac === facultadSeleccionada);
-    const especialidad = especialidadesFiltradas.find(e => e.c_codesp === especialidadSeleccionada);
-    
-    console.log('Datos a guardar:', {
-      facultad: facultad,
-      especialidad: especialidad,
-      c_codfac: facultadSeleccionada,
-      c_codesp: especialidadSeleccionada,
-      horarios: horariosActivos,
-      cursos: cursosInteres
-    });
-    
-    setAlert({ 
-      type: 'success', 
-      message: `Configuración guardada para ${facultad?.nom_fac} - ${especialidad?.nomesp}: ${horariosActivos.length} días y ${cursosInteres.length} cursos seleccionados` 
-    });
+    // Crear postulación en el backend
+    try {
+      setLoading(true);
+      
+      const postulacionData = {
+        c_codfac: facultadSeleccionada,
+        c_codesp: especialidadSeleccionada,
+        horarios: horariosActivos,
+        cursos: cursosInteres
+      };
+
+      const response = await postulacionAPI.crearPostulacion(postulacionData);
+      
+      if (response.success) {
+        setAlert({ 
+          type: 'success', 
+          message: 'Postulación creada exitosamente' 
+        });
+        
+        // Limpiar formulario
+        setFacultadSeleccionada('');
+        setEspecialidadSeleccionada('');
+        setEspecialidades([]);
+        setCursos([]);
+        setHorarios({
+          'Lunes': { activo: false, hora_inicio: '', hora_fin: '' },
+          'Martes': { activo: false, hora_inicio: '', hora_fin: '' },
+          'Miércoles': { activo: false, hora_inicio: '', hora_fin: '' },
+          'Jueves': { activo: false, hora_inicio: '', hora_fin: '' },
+          'Viernes': { activo: false, hora_inicio: '', hora_fin: '' },
+          'Sábado': { activo: false, hora_inicio: '', hora_fin: '' },
+          'Domingo': { activo: false, hora_inicio: '', hora_fin: '' }
+        });
+        setCursosInteres([]);
+      } else {
+        setAlert({ 
+          type: 'error', 
+          message: response.message || 'Error al crear la postulación' 
+        });
+      }
+    } catch (error) {
+      console.error('Error al crear postulación:', error);
+      setAlert({ 
+        type: 'error', 
+        message: 'Error al crear la postulación. Por favor intente nuevamente.' 
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -322,7 +351,7 @@ const HorariosPage = () => {
         }}>
           <ScheduleIcon color="primary" sx={{ fontSize: 40 }} />
           <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
-            📅 Configuración de Postulación
+            � Crear Nueva Postulación
           </Typography>
         </Box>
         <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
@@ -365,17 +394,13 @@ const HorariosPage = () => {
                   value={facultadSeleccionada}
                   label="Facultad"
                   onChange={(e) => handleFacultadChange(e.target.value)}
+                  disabled={loading}
                 >
-                  {facultadesDisponibles.map((facultad) => (
+                  {facultades.map((facultad) => (
                     <MenuItem key={facultad.c_codfac} value={facultad.c_codfac}>
-                      <Box>
-                        <Typography variant="subtitle2" fontWeight="bold">
-                          {facultad.nom_fac}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          Código: {facultad.c_codfac}
-                        </Typography>
-                      </Box>
+                      <Typography variant="subtitle2" fontWeight="bold">
+                        {facultad.nom_fac}
+                      </Typography>
                     </MenuItem>
                   ))}
                 </Select>
@@ -383,23 +408,18 @@ const HorariosPage = () => {
             </Grid>
 
             <Grid item xs={12} md={6}>
-              <FormControl fullWidth disabled={!facultadSeleccionada}>
+              <FormControl fullWidth disabled={!facultadSeleccionada || loading}>
                 <InputLabel>Especialidad</InputLabel>
                 <Select
                   value={especialidadSeleccionada}
                   label="Especialidad"
                   onChange={(e) => handleEspecialidadChange(e.target.value)}
                 >
-                  {especialidadesFiltradas.map((especialidad) => (
+                  {especialidades.map((especialidad) => (
                     <MenuItem key={especialidad.c_codesp} value={especialidad.c_codesp}>
-                      <Box>
-                        <Typography variant="subtitle2" fontWeight="bold">
-                          {especialidad.nomesp}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          Código: {especialidad.c_codesp}
-                        </Typography>
-                      </Box>
+                      <Typography variant="subtitle2" fontWeight="bold">
+                        {especialidad.nomesp}
+                      </Typography>
                     </MenuItem>
                   ))}
                 </Select>
@@ -435,13 +455,13 @@ const HorariosPage = () => {
               </Typography>
             </Box>
 
-            {cursosDisponibles.length > 0 && (
+            {cursos.length > 0 && (
               <Box>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                   Selecciona los cursos en los que te gustaría dictar clases:
                 </Typography>
                 <List dense>
-                  {cursosDisponibles.map((curso) => (
+                  {cursos.map((curso) => (
                     <ListItem 
                       key={curso.id} 
                       sx={{ 
@@ -493,10 +513,10 @@ const HorariosPage = () => {
               </Box>
             )}
 
-            {cursosDisponibles.length === 0 && (
+            {cursos.length === 0 && especialidadSeleccionada && (
               <Alert severity="warning">
                 <Typography variant="body2">
-                  No hay cursos disponibles para esta especialidad.
+                  {loading ? 'Cargando cursos...' : 'No hay cursos disponibles para esta especialidad.'}
                 </Typography>
               </Alert>
             )}
@@ -605,7 +625,8 @@ const HorariosPage = () => {
                 variant="contained"
                 size="large"
                 onClick={handleGuardar}
-                startIcon={<ScheduleIcon />}
+                disabled={loading}
+                startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <ScheduleIcon />}
                 sx={{ 
                   bgcolor: 'primary.main',
                   color: 'white',
@@ -624,7 +645,7 @@ const HorariosPage = () => {
                   transition: 'all 0.2s ease'
                 }}
               >
-                GUARDAR
+                {loading ? 'ENVIANDO...' : 'ENVIAR POSTULACIÓN'}
               </Button>
             </CardContent>
           </Card>
@@ -634,4 +655,4 @@ const HorariosPage = () => {
   );
 };
 
-export default HorariosPage;
+export default CrearPostulacionPage;
