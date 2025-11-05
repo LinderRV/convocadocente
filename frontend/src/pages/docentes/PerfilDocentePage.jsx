@@ -34,7 +34,7 @@ import {
   Delete as DeleteIcon
 } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
-import docenteAPI from '../../services/docenteAPI';
+import docenteAPI from '../../services/docentes/docenteAPI';
 
 const PerfilDocentePage = () => {
   const { user } = useAuth();

@@ -31,7 +31,7 @@ import {
   Category as CategoryIcon,
   ExpandMore as ExpandMoreIcon
 } from '@mui/icons-material';
-import { postulacionAPI } from '../../services/postulacionAPI';
+import { postulacionDocenteAPI } from '../../services/docentes/postulacionDocenteAPI';
 
 const CrearPostulacionPage = () => {
   const [alert, setAlert] = useState(null);
@@ -68,7 +68,7 @@ const CrearPostulacionPage = () => {
   const cargarFacultades = async () => {
     try {
       setLoading(true);
-      const response = await postulacionAPI.getFacultades();
+      const response = await postulacionDocenteAPI.getFacultades();
       if (response.success) {
         setFacultades(response.data);
       } else {
@@ -85,7 +85,7 @@ const CrearPostulacionPage = () => {
   const cargarEspecialidades = async (c_codfac) => {
     try {
       setLoading(true);
-      const response = await postulacionAPI.getEspecialidadesByFacultad(c_codfac);
+      const response = await postulacionDocenteAPI.getEspecialidadesByFacultad(c_codfac);
       if (response.success) {
         setEspecialidades(response.data);
       } else {
@@ -102,7 +102,7 @@ const CrearPostulacionPage = () => {
   const cargarCursos = async (c_codfac, c_codesp) => {
     try {
       setLoading(true);
-      const response = await postulacionAPI.getCursosByEspecialidad(c_codfac, c_codesp);
+      const response = await postulacionDocenteAPI.getCursosByEspecialidad(c_codfac, c_codesp);
       if (response.success) {
         setCursos(response.data);
       } else {
@@ -121,7 +121,7 @@ const CrearPostulacionPage = () => {
   // Verificar si ya existe postulación para la especialidad
   const verificarPostulacionExistente = async (c_codfac, c_codesp) => {
     try {
-      const response = await postulacionAPI.verificarPostulacion(c_codfac, c_codesp);
+      const response = await postulacionDocenteAPI.verificarPostulacion(c_codfac, c_codesp);
       return response.data;
     } catch (error) {
       console.error('Error al verificar postulación:', error);
@@ -320,7 +320,7 @@ const CrearPostulacionPage = () => {
         cursos: cursosInteres
       };
 
-      const response = await postulacionAPI.crearPostulacion(postulacionData);
+      const response = await postulacionDocenteAPI.crearPostulacion(postulacionData);
       
       if (response.success) {
         setAlert({ 

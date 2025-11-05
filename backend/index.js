@@ -13,12 +13,12 @@ const { testConnection } = require('./src/config/database');
 const authRoutes = require('./src/routes/authRoutes');
 const usuariosRoutes = require('./src/routes/usuariosRoutes');
 const cursosRoutes = require('./src/routes/cursosRoutes');
-const postulacionRoutes = require('./src/routes/postulacionRoutes');
 
 // Importar rutas de docentes
 const formacionesRoutes = require('./src/routes/docentes/formacionesRoutes');
 const experienciasRoutes = require('./src/routes/docentes/experienciasRoutes');
 const docenteRoutes = require('./src/routes/docentes/docenteRoutes');
+const postulacionDocenteRoutes = require('./src/routes/docentes/postulacionDocenteRoutes');
 
 // Importar middleware personalizado
 const errorHandler = require('./src/middleware/errorHandler');
@@ -58,11 +58,11 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/auth', authRoutes);
 app.use('/api/usuarios', usuariosRoutes);
 app.use('/api/cursos', cursosRoutes);
-app.use('/api/postulaciones', postulacionRoutes);
 
 // Rutas de docentes
 app.use('/api/docentes/formaciones', formacionesRoutes);
 app.use('/api/docentes/experiencias', experienciasRoutes);
+app.use('/api/docentes/postulaciones', postulacionDocenteRoutes);
 app.use('/api/docentes', docenteRoutes);
 
 // Ruta de salud

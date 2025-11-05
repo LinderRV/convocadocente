@@ -40,35 +40,35 @@ const apiRequest = async (url, options = {}) => {
   }
 };
 
-// API para postulaciones
-export const postulacionAPI = {
+// API para postulaciones de docentes
+export const postulacionDocenteAPI = {
   // Obtener todas las facultades disponibles
   getFacultades: async () => {
-    return await apiRequest('/postulaciones/facultades');
+    return await apiRequest('/docentes/postulaciones/facultades');
   },
 
   // Obtener especialidades por facultad
   getEspecialidadesByFacultad: async (c_codfac) => {
-    return await apiRequest(`/postulaciones/especialidades/${c_codfac}`);
+    return await apiRequest(`/docentes/postulaciones/especialidades/${c_codfac}`);
   },
 
   // Obtener cursos por especialidad
   getCursosByEspecialidad: async (c_codfac, c_codesp) => {
-    return await apiRequest(`/postulaciones/cursos/${c_codfac}/${c_codesp}`);
+    return await apiRequest(`/docentes/postulaciones/cursos/${c_codfac}/${c_codesp}`);
   },
 
   // Verificar si puede crear postulación para una especialidad
   verificarPostulacion: async (c_codfac, c_codesp) => {
-    return await apiRequest(`/postulaciones/verificar/${c_codfac}/${c_codesp}`);
+    return await apiRequest(`/docentes/postulaciones/verificar/${c_codfac}/${c_codesp}`);
   },
 
   // Crear nueva postulación completa
   crearPostulacion: async (postulacionData) => {
-    return await apiRequest('/postulaciones/crear', {
+    return await apiRequest('/docentes/postulaciones/crear', {
       method: 'POST',
       body: JSON.stringify(postulacionData)
     });
   }
 };
 
-export default postulacionAPI;
+export default postulacionDocenteAPI;

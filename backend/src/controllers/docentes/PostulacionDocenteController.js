@@ -1,6 +1,6 @@
-const { pool } = require('../config/database');
+const { pool } = require('../../config/database');
 
-class PostulacionController {
+class PostulacionDocenteController {
   // Obtener todas las facultades disponibles
   static async getFacultades(req, res) {
     try {
@@ -295,4 +295,4 @@ class PostulacionController {
   }
 }
 
-module.exports = PostulacionController;
+module.exports = PostulacionDocenteController;

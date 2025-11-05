@@ -35,7 +35,7 @@ import {
   DeleteOutline as DeleteOutlineIcon
 } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
-import formacionesAPI from '../../services/formacionesAPI';
+import formacionesAPI from '../../services/docentes/formacionesAPI';
 
 const FormacionesPage = () => {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
