@@ -66,6 +66,7 @@ const PostulacionesPage = () => {
   const [rowsPerPage] = useState(5); // 5 postulaciones por página
   const [nuevoEstado, setNuevoEstado] = useState('');
   const [mensajeEvaluacion, setMensajeEvaluacion] = useState('');
+  const [alert, setAlert] = useState(null); // Para mostrar mensajes de descarga
   // Estado para modal de información docente
   const [openInfoDocenteDialog, setOpenInfoDocenteDialog] = useState(false);
   const [selectedDocente, setSelectedDocente] = useState(null);
@@ -183,11 +184,13 @@ const PostulacionesPage = () => {
 
   const handleViewFormaciones = (postulacion) => {
     setSelectedFormaciones(postulacion.formaciones_academicas);
+    setSelectedPostulacion(postulacion); // AGREGAR ESTA LÍNEA CARAJO
     setOpenFormacionesDialog(true);
   };
 
   const handleViewExperiencias = (postulacion) => {
     setSelectedExperiencias(postulacion.experiencias_laborales);
+    setSelectedPostulacion(postulacion); // AGREGAR ESTA LÍNEA TAMBIÉN
     setOpenExperienciasDialog(true);
   };
 
@@ -197,6 +200,100 @@ const PostulacionesPage = () => {
       horarios: postulacion.horarios
     });
     setOpenCursosHorariosDialog(true);
+  };
+
+  // Funciones de descarga SIMPLE Y EFICAZ
+  const handleDownloadCV = async (docente) => {
+    if (!docente.cv_archivo) {
+      setAlert({ type: 'error', message: 'No hay CV disponible para descargar' });
+      return;
+    }
+    
+    try {
+      // Descargar directamente al ordenador usando fetch
+      const url = `http://localhost:3000/uploads/cv/usuario_${docente.id}/${docente.cv_archivo}`;
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error('Error al obtener el archivo');
+      }
+      
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = docente.cv_archivo;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
+      
+      setAlert({ type: 'success', message: 'CV descargado correctamente' });
+    } catch (error) {
+      setAlert({ type: 'error', message: 'Error al descargar el CV' });
+    }
+  };
+
+  const handleDownloadFormacion = async (formacion, docenteId) => {
+    if (!formacion.documento_archivo) {
+      setAlert({ type: 'error', message: 'No hay documento disponible para descargar' });
+      return;
+    }
+    
+    try {
+      // Descargar directamente al ordenador usando fetch
+      const url = `http://localhost:3000/uploads/formacion/usuario_${docenteId}/${formacion.documento_archivo}`;
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error('Error al obtener el archivo');
+      }
+      
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = formacion.documento_archivo;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
+      
+      setAlert({ type: 'success', message: 'Documento de formación descargado correctamente' });
+    } catch (error) {
+      setAlert({ type: 'error', message: 'Error al descargar el documento' });
+    }
+  };
+
+  const handleDownloadExperiencia = async (experiencia, docenteId) => {
+    if (!experiencia.constancia_archivo) {
+      setAlert({ type: 'error', message: 'No hay constancia disponible para descargar' });
+      return;
+    }
+    
+    try {
+      // Descargar directamente al ordenador usando fetch
+      const url = `http://localhost:3000/uploads/experiencia/usuario_${docenteId}/${experiencia.constancia_archivo}`;
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error('Error al obtener el archivo');
+      }
+      
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = experiencia.constancia_archivo;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
+      
+      setAlert({ type: 'success', message: 'Constancia de experiencia descargada correctamente' });
+    } catch (error) {
+      setAlert({ type: 'error', message: 'Error al descargar la constancia' });
+    }
   };
 
   // Cálculos para paginación
@@ -215,6 +312,17 @@ const PostulacionesPage = () => {
 
   return (
     <Box sx={{ p: 3 }}>
+      {/* Alert para mensajes de descarga */}
+      {alert && (
+        <Alert 
+          severity={alert.type} 
+          sx={{ mb: 2 }} 
+          onClose={() => setAlert(null)}
+        >
+          {alert.message}
+        </Alert>
+      )}
+
       {/* Header */}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>
@@ -532,16 +640,23 @@ const PostulacionesPage = () => {
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                       <InfoIcon color="primary" />
                       <Typography variant="body1">
-                        Archivo: {selectedDocente.cv_archivo}
+                        Curriculum Vitae
                       </Typography>
-                      <Button 
-                        variant="outlined" 
-                        size="small" 
-                        color="primary"
-                        sx={{ ml: 'auto' }}
-                      >
-                        Descargar CV
-                      </Button>
+                      {selectedDocente.cv_archivo ? (
+                        <Button 
+                          variant="outlined" 
+                          size="small" 
+                          color="primary"
+                          sx={{ ml: 'auto' }}
+                          onClick={() => handleDownloadCV(selectedDocente)}
+                        >
+                          Descargar CV
+                        </Button>
+                      ) : (
+                        <Typography variant="body2" color="text.secondary" sx={{ ml: 'auto' }}>
+                          Sin CV
+                        </Typography>
+                      )}
                     </Box>
                   </Paper>
                 </Grid>
@@ -589,7 +704,7 @@ const PostulacionesPage = () => {
               
               {/* Lista de formaciones */}
               {selectedFormaciones.map((formacion, index) => (
-                <Grid item xs={12} key={formacion.id}>
+                <Grid item xs={12} key={index}>
                   <Paper sx={{ 
                     p: 3, 
                     bgcolor: 'grey.50', 
@@ -667,16 +782,23 @@ const PostulacionesPage = () => {
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                               <InfoIcon color="success" />
                               <Typography variant="body2" sx={{ flexGrow: 1 }}>
-                                <strong>Documento:</strong> {formacion.documento_archivo}
+                                Documento de {formacion.nivel_formacion}
                               </Typography>
-                              <Button 
-                                variant="outlined" 
-                                size="small" 
-                                color="success"
-                                sx={{ minWidth: 'auto' }}
-                              >
-                                Descargar
-                              </Button>
+                              {formacion.documento_archivo ? (
+                                <Button 
+                                  variant="outlined" 
+                                  size="small" 
+                                  color="success"
+                                  sx={{ minWidth: 'auto' }}
+                                  onClick={() => handleDownloadFormacion(formacion, selectedPostulacion.docente.id)}
+                                >
+                                  Descargar
+                                </Button>
+                              ) : (
+                                <Typography variant="body2" color="text.secondary">
+                                  Sin documento
+                                </Typography>
+                              )}
                             </Box>
                           </Paper>
                         </Grid>
@@ -744,7 +866,7 @@ const PostulacionesPage = () => {
               
               {/* Lista de experiencias */}
               {selectedExperiencias.map((experiencia, index) => (
-                <Grid item xs={12} key={experiencia.id}>
+                <Grid item xs={12} key={index}>
                   <Paper sx={{ 
                     p: 3, 
                     bgcolor: 'grey.50', 
@@ -855,16 +977,23 @@ const PostulacionesPage = () => {
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                               <InfoIcon color="secondary" />
                               <Typography variant="body2" sx={{ flexGrow: 1 }}>
-                                <strong>Constancia:</strong> {experiencia.constancia_archivo}
+                                Constancia laboral
                               </Typography>
-                              <Button 
-                                variant="outlined" 
-                                size="small" 
-                                color="secondary"
-                                sx={{ minWidth: 'auto' }}
-                              >
-                                Descargar
-                              </Button>
+                              {experiencia.constancia_archivo ? (
+                                <Button 
+                                  variant="outlined" 
+                                  size="small" 
+                                  color="secondary"
+                                  sx={{ minWidth: 'auto' }}
+                                  onClick={() => handleDownloadExperiencia(experiencia, selectedPostulacion.docente.id)}
+                                >
+                                  Descargar
+                                </Button>
+                              ) : (
+                                <Typography variant="body2" color="text.secondary">
+                                  Sin constancia
+                                </Typography>
+                              )}
                             </Box>
                           </Paper>
                         </Grid>
@@ -932,7 +1061,7 @@ const PostulacionesPage = () => {
                 {selectedCursosHorarios.cursosInteres && selectedCursosHorarios.cursosInteres.length > 0 ? (
                   <Grid container spacing={2}>
                     {selectedCursosHorarios.cursosInteres.map((curso, index) => (
-                      <Grid item xs={12} key={curso.id}>
+                      <Grid item xs={12} key={index}>
                         <Paper sx={{ 
                           p: 2, 
                           bgcolor: 'grey.50', 

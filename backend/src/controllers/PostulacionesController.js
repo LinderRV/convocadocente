@@ -135,7 +135,7 @@ class PostulacionesController {
             email: p.docente_email,
             telefono: p.docente_telefono,
             dni: p.docente_dni,
-            cv_archivo: p.docente_cv,
+            cv_archivo: p.docente_cv, // Solo el nombre del archivo
             nombres: p.docente_nombres,
             apellidos: p.docente_apellidos,
             fecha_nacimiento: p.docente_fecha_nacimiento,
@@ -149,7 +149,7 @@ class PostulacionesController {
             institucion: f.institucion,
             pais: f.pais,
             fecha_obtencion: f.fecha_obtencion,
-            documento_archivo: f.documento_archivo
+            documento_archivo: f.documento_archivo // Solo el nombre del archivo
           })),
           experiencias_laborales: experiencias.map(exp => ({
             pais: exp.pais,
@@ -160,7 +160,7 @@ class PostulacionesController {
             fecha_inicio: exp.fecha_inicio,
             fecha_fin: exp.fecha_fin,
             actual: exp.actual,
-            constancia_archivo: exp.constancia_archivo
+            constancia_archivo: exp.constancia_archivo // Solo el nombre del archivo
           })),
           especialidad: {
             codigo: `${p.c_codfac}${p.c_codesp}`,
