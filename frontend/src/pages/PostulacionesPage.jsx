@@ -63,45 +63,104 @@ const PostulacionesPage = () => {
   const [rowsPerPage] = useState(5); // 5 postulaciones por página
   const [nuevoEstado, setNuevoEstado] = useState('');
   const [mensajeEvaluacion, setMensajeEvaluacion] = useState('');
+  // Estado para modal de información docente
+  const [openInfoDocenteDialog, setOpenInfoDocenteDialog] = useState(false);
+  const [selectedDocente, setSelectedDocente] = useState(null);
+  // Estados para modales de formaciones y experiencias
+  const [openFormacionesDialog, setOpenFormacionesDialog] = useState(false);
+  const [selectedFormaciones, setSelectedFormaciones] = useState([]);
+  const [openExperienciasDialog, setOpenExperienciasDialog] = useState(false);
+  const [selectedExperiencias, setSelectedExperiencias] = useState([]);
+  // Estados para modal de cursos y horarios
+  const [openCursosHorariosDialog, setOpenCursosHorariosDialog] = useState(false);
+  const [selectedCursosHorarios, setSelectedCursosHorarios] = useState(null);
 
-  // Datos mockeados para desarrollo
+  // Datos mockeados para desarrollo basados en el esquema real
   const mockPostulaciones = [
     {
       id: 1,
       docente: {
         id: 11,
-        nombre: 'Dr. Juan Carlos Medicina',
-        email: 'docente@uma.edu.pe',
+        nombre: 'Pedro', // De usuarios.nombre
+        email: 'pedro.rojas@uma.edu.pe',
         telefono: '912234934',
         dni: '7563221',
         cv_archivo: 'cv_11_1762279121199.docx',
         // Información adicional de la tabla docentes
-        nombres: 'Juan Carlos',
-        apellidos: 'Medicina Rojas',
-        fecha_nacimiento: '1985-03-15',
+        nombres: 'drmedicina',
+        apellidos: 'ROJAS PEREZ',
+        fecha_nacimiento: '1999-12-20',
         genero: 'Masculino',
-        pais: 'Perú',
-        direccion: 'Av. Los Cedros 123, Lima'
+        pais: 'Japón',
+        direccion: 'av el muro o este'
       },
-      // Formaciones académicas de la tabla formaciones_academicas
+      // Formaciones académicas de la tabla formaciones_academicas (user_id=11)
       formaciones_academicas: [
         {
           id: 1,
-          nivel_formacion: 'Doctorado',
-          programa_academico: 'MEDICINA GENERAL',
-          institucion: 'Universidad Nacional Mayor de San Marcos',
-          pais: 'PERÚ',
-          fecha_obtencion: '2015-12-20',
-          documento_archivo: 'formacion_1_doctorado.pdf'
+          nivel_formacion: 'Maestría',
+          programa_academico: 'SALUD PUBLICA',
+          institucion: 'USENS',
+          pais: 'ESPAÑA',
+          fecha_obtencion: '2000-10-20',
+          documento_archivo: 'formacion_11_1762289915788.pdf'
         },
         {
           id: 2,
-          nivel_formacion: 'Maestría',
-          programa_academico: 'SALUD PÚBLICA',
-          institucion: 'USENS',
-          pais: 'ESPAÑA',
-          fecha_obtencion: '2010-10-20',
-          documento_archivo: 'formacion_1_maestria.pdf'
+          nivel_formacion: 'Licenciatura',
+          programa_academico: 'ENFERMERIA',
+          institucion: 'NOTBERT WINNER',
+          pais: 'PERU',
+          fecha_obtencion: '2024-01-20',
+          documento_archivo: 'formacion_11_1762289907765.pdf'
+        },
+        {
+          id: 3,
+          nivel_formacion: 'Post-Doctorado',
+          programa_academico: 'EN QUIROFANO',
+          institucion: 'UNGENS',
+          pais: 'CHILE',
+          fecha_obtencion: '2024-02-20',
+          documento_archivo: 'formacion_11_1762290039781.pdf'
+        }
+      ],
+      // Experiencias laborales de la tabla experiencias_laborales (user_id=11)
+      experiencias_laborales: [
+        {
+          id: 1,
+          pais: 'OLANDA',
+          sector: 'Privado',
+          empresa: 'GLORIA',
+          ruc: '12020123456',
+          cargo: 'CAJERO',
+          fecha_inicio: '2023-12-10',
+          fecha_fin: '2024-10-20',
+          actual: 0,
+          constancia_archivo: 'experiencia_11_1762295549229.pdf'
+        },
+        {
+          id: 2,
+          pais: 'Argentina',
+          sector: 'Privado',
+          empresa: 'Renic',
+          ruc: '12345678965',
+          cargo: 'Contador',
+          fecha_inicio: '1999-02-10',
+          fecha_fin: '2001-02-20',
+          actual: 0,
+          constancia_archivo: 'experiencia_11_1762293790690.pdf'
+        },
+        {
+          id: 3,
+          pais: 'Chile',
+          sector: 'Público',
+          empresa: 'Universidad del Sur',
+          ruc: '78945632152',
+          cargo: 'Docente',
+          fecha_inicio: '2025-02-20',
+          fecha_fin: null,
+          actual: 1,
+          constancia_archivo: 'experiencia_11_1762295587049.pdf'
         }
       ],
       especialidad: {
@@ -110,140 +169,129 @@ const PostulacionesPage = () => {
         facultad: 'CIENCIAS DE LA SALUD'
       },
       estado: 'PENDIENTE',
-      fecha_postulacion: '2025-11-04T23:47:35Z',
+      fecha_postulacion: '2025-11-06T00:35:35Z',
       evaluador: {
         id: 10,
-        nombre: 'James Pérez Lima',
+        nombre: 'James Pérez lima',
         email: 'james.perezlima@gmail.com'
       },
       cursosInteres: [
-        { id: 1, codigo: 'COUD002', nombre: 'Matemáticas', ciclo: 1 },
-        { id: 3, codigo: 'ESG0201', nombre: 'LIDERAZGO', ciclo: null }
+        { id: 3, codigo: 'ESG0201', nombre: 'LIDERAZGO', ciclo: null },
+        { id: 1, codigo: 'COUD002', nombre: 'Matemáticas', ciclo: null }
       ],
       horarios: [
-        { dia: 'Lunes', hora_inicio: '10:40', hora_fin: '18:00' },
-        { dia: 'Jueves', hora_inicio: '08:00', hora_fin: '20:41' }
+        { dia: 'Lunes', hora_inicio: '10:00', hora_fin: '20:00' },
+        { dia: 'Miércoles', hora_inicio: '13:00', hora_fin: '21:30' }
       ],
-      mensaje_entrevista: null
+      comentario_evaluacion: null
     },
     {
       id: 2,
       docente: {
-        id: 12,
-        nombre: 'Dra. María Elena García',
-        email: 'maria.garcia@uma.edu.pe',
-        telefono: '987654321',
-        dni: '12345678',
-        cv_archivo: 'cv_12_1762279121200.pdf',
+        id: 11,
+        nombre: 'Pedro', // Mismo docente, postulación diferente
+        email: 'pedro.rojas@uma.edu.pe',
+        telefono: '912234934',
+        dni: '7563221',
+        cv_archivo: 'cv_11_1762279121199.docx',
         // Información adicional de la tabla docentes
-        nombres: 'María Elena',
-        apellidos: 'García Mendoza',
-        fecha_nacimiento: '1982-07-22',
-        genero: 'Femenino',
-        pais: 'Perú',
-        direccion: 'Jr. Las Flores 456, Callao'
+        nombres: 'drmedicina',
+        apellidos: 'ROJAS PEREZ',
+        fecha_nacimiento: '1999-12-20',
+        genero: 'Masculino',
+        pais: 'Japón',
+        direccion: 'av el muro o este'
       },
-      // Formaciones académicas de la tabla formaciones_academicas
+      // Mismas formaciones académicas
       formaciones_academicas: [
+        {
+          id: 1,
+          nivel_formacion: 'Maestría',
+          programa_academico: 'SALUD PUBLICA',
+          institucion: 'USENS',
+          pais: 'ESPAÑA',
+          fecha_obtencion: '2000-10-20',
+          documento_archivo: 'formacion_11_1762289915788.pdf'
+        },
+        {
+          id: 2,
+          nivel_formacion: 'Licenciatura',
+          programa_academico: 'ENFERMERIA',
+          institucion: 'NOTBERT WINNER',
+          pais: 'PERU',
+          fecha_obtencion: '2024-01-20',
+          documento_archivo: 'formacion_11_1762289907765.pdf'
+        },
         {
           id: 3,
-          nivel_formacion: 'Licenciatura',
-          programa_academico: 'ENFERMERÍA',
-          institucion: 'Universidad Cayetano Heredia',
-          pais: 'PERÚ',
-          fecha_obtencion: '2008-01-20',
-          documento_archivo: 'formacion_2_licenciatura.pdf'
-        },
-        {
-          id: 4,
-          nivel_formacion: 'Especialización',
-          programa_academico: 'CUIDADOS INTENSIVOS',
-          institucion: 'Hospital Nacional Dos de Mayo',
-          pais: 'PERÚ',
-          fecha_obtencion: '2012-06-15',
-          documento_archivo: 'formacion_2_especializacion.pdf'
-        }
-      ],
-      especialidad: {
-        codigo: 'S1',
-        nombre: 'ENFERMERÍA',
-        facultad: 'CIENCIAS DE LA SALUD'
-      },
-      estado: 'EVALUANDO',
-      fecha_postulacion: '2025-11-03T15:30:00Z',
-      evaluador: {
-        id: 10,
-        nombre: 'James Pérez Lima',
-        email: 'james.perezlima@gmail.com'
-      },
-      cursosInteres: [
-        { id: 1, codigo: 'COUD002', nombre: 'Matemáticas', ciclo: 1 }
-      ],
-      horarios: [
-        { dia: 'Martes', hora_inicio: '14:00', hora_fin: '18:00' },
-        { dia: 'Viernes', hora_inicio: '08:00', hora_fin: '12:00' }
-      ],
-      mensaje_entrevista: 'En proceso de evaluación de documentos'
-    },
-    {
-      id: 3,
-      docente: {
-        id: 13,
-        nombre: 'Dr. Carlos Alberto Rodríguez',
-        email: 'carlos.rodriguez@uma.edu.pe',
-        telefono: '956789123',
-        dni: '87654321',
-        cv_archivo: 'cv_13_1762279121201.pdf',
-        // Información adicional de la tabla docentes
-        nombres: 'Carlos Alberto',
-        apellidos: 'Rodríguez Vargas',
-        fecha_nacimiento: '1978-11-05',
-        genero: 'Masculino',
-        pais: 'Colombia',
-        direccion: 'Av. Universitaria 789, San Miguel'
-      },
-      // Formaciones académicas de la tabla formaciones_academicas
-      formaciones_academicas: [
-        {
-          id: 5,
           nivel_formacion: 'Post-Doctorado',
-          programa_academico: 'INVESTIGACIÓN EN ENFERMERÍA',
-          institucion: 'Universidad de Barcelona',
-          pais: 'ESPAÑA',
-          fecha_obtencion: '2020-09-10',
-          documento_archivo: 'formacion_3_postdoctorado.pdf'
-        },
-        {
-          id: 6,
-          nivel_formacion: 'Maestría',
-          programa_academico: 'GESTIÓN EN SALUD',
+          programa_academico: 'EN QUIROFANO',
           institucion: 'UNGENS',
           pais: 'CHILE',
-          fecha_obtencion: '2015-02-20',
-          documento_archivo: 'formacion_3_maestria.pdf'
+          fecha_obtencion: '2024-02-20',
+          documento_archivo: 'formacion_11_1762290039781.pdf'
+        }
+      ],
+      // Mismas experiencias laborales
+      experiencias_laborales: [
+        {
+          id: 1,
+          pais: 'OLANDA',
+          sector: 'Privado',
+          empresa: 'GLORIA',
+          ruc: '12020123456',
+          cargo: 'CAJERO',
+          fecha_inicio: '2023-12-10',
+          fecha_fin: '2024-10-20',
+          actual: 0,
+          constancia_archivo: 'experiencia_11_1762295549229.pdf'
+        },
+        {
+          id: 2,
+          pais: 'Argentina',
+          sector: 'Privado',
+          empresa: 'Renic',
+          ruc: '12345678965',
+          cargo: 'Contador',
+          fecha_inicio: '1999-02-10',
+          fecha_fin: '2001-02-20',
+          actual: 0,
+          constancia_archivo: 'experiencia_11_1762293790690.pdf'
+        },
+        {
+          id: 3,
+          pais: 'Chile',
+          sector: 'Público',
+          empresa: 'Universidad del Sur',
+          ruc: '78945632152',
+          cargo: 'Docente',
+          fecha_inicio: '2025-02-20',
+          fecha_fin: null,
+          actual: 1,
+          constancia_archivo: 'experiencia_11_1762295587049.pdf'
         }
       ],
       especialidad: {
-        codigo: 'S1',
-        nombre: 'ENFERMERÍA',
+        codigo: 'S2',
+        nombre: 'FARMACIA Y BIOQUÍMICA',
         facultad: 'CIENCIAS DE LA SALUD'
       },
-      estado: 'APROBADO',
-      fecha_postulacion: '2025-11-01T10:15:00Z',
+      estado: 'PENDIENTE',
+      fecha_postulacion: '2025-11-06T00:36:42Z',
       evaluador: {
-        id: 10,
-        nombre: 'James Pérez Lima',
-        email: 'james.perezlima@gmail.com'
+        id: 12,
+        nombre: 'JUAN TOBAR',
+        email: 'juan.tovar@uma.edu.pe'
       },
       cursosInteres: [
-        { id: 3, codigo: 'ESG0201', nombre: 'LIDERAZGO', ciclo: null }
+        { id: 4, codigo: 'SESG3013', nombre: 'MÉTODOS DE ESTUDIO', ciclo: null },
+        { id: 5, codigo: 'SCTS3022', nombre: 'QUÍMICA GENERAL', ciclo: null }
       ],
       horarios: [
-        { dia: 'Lunes', hora_inicio: '08:00', hora_fin: '12:00' },
-        { dia: 'Miércoles', hora_inicio: '14:00', hora_fin: '18:00' },
-        { dia: 'Viernes', hora_inicio: '08:00', hora_fin: '12:00' }
+        { dia: 'Jueves', hora_inicio: '14:00', hora_fin: '21:40' },
+        { dia: 'Sábado', hora_inicio: '09:20', hora_fin: '23:00' }
       ],
-      mensaje_entrevista: 'Felicitaciones! Su postulación ha sido aprobada. Por favor coordinar entrevista para el día 15 de noviembre a las 10:00 AM.'
+      comentario_evaluacion: null
     }
   ];
 
@@ -307,9 +355,32 @@ const PostulacionesPage = () => {
   const handleEvaluarPostulacion = (postulacion) => {
     setSelectedPostulacion(postulacion);
     setNuevoEstado(postulacion.estado);
-    setMensajeEvaluacion(postulacion.mensaje_entrevista || '');
+    setMensajeEvaluacion(postulacion.comentario_evaluacion || '');
     setDialogType('evaluar');
     setOpenDialog(true);
+  };
+
+  const handleViewInfoDocente = (postulacion) => {
+    setSelectedDocente(postulacion.docente);
+    setOpenInfoDocenteDialog(true);
+  };
+
+  const handleViewFormaciones = (postulacion) => {
+    setSelectedFormaciones(postulacion.formaciones_academicas);
+    setOpenFormacionesDialog(true);
+  };
+
+  const handleViewExperiencias = (postulacion) => {
+    setSelectedExperiencias(postulacion.experiencias_laborales);
+    setOpenExperienciasDialog(true);
+  };
+
+  const handleViewCursosHorarios = (postulacion) => {
+    setSelectedCursosHorarios({
+      cursosInteres: postulacion.cursosInteres,
+      horarios: postulacion.horarios
+    });
+    setOpenCursosHorariosDialog(true);
   };
 
   // Cálculos para paginación
@@ -323,11 +394,7 @@ const PostulacionesPage = () => {
   };
 
   if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-        <Typography>Cargando postulaciones...</Typography>
-      </Box>
-    );
+    return null;
   }
 
   return (
@@ -354,6 +421,7 @@ const PostulacionesPage = () => {
                 <TableCell>Fecha Postulación</TableCell>
                 <TableCell>Información Docente</TableCell>
                 <TableCell>Formaciones Académicas</TableCell>
+                <TableCell>Experiencias Laborales</TableCell>
                 <TableCell>Cursos y Horarios</TableCell>
                 <TableCell align="center">Acciones</TableCell>
               </TableRow>
@@ -366,17 +434,9 @@ const PostulacionesPage = () => {
                       <Avatar sx={{ bgcolor: 'primary.main' }}>
                         {postulacion.docente.nombre.charAt(0)}
                       </Avatar>
-                      <Box>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                          {postulacion.docente.nombre}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {postulacion.docente.email}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          DNI: {postulacion.docente.dni}
-                        </Typography>
-                      </Box>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                        {postulacion.docente.nombre}
+                      </Typography>
                     </Box>
                   </TableCell>
                   <TableCell>
@@ -404,56 +464,46 @@ const PostulacionesPage = () => {
                   <TableCell>
                     <Tooltip title="Ver detalles de información personal">
                       <IconButton 
+                        onClick={() => handleViewInfoDocente(postulacion)}
                         size="small"
                         color="info"
                       >
                         <InfoIcon />
                       </IconButton>
                     </Tooltip>
-                    <Box sx={{ mt: 1 }}>
-                      <Typography variant="caption" color="text.secondary" display="block">
-                        Género: {postulacion.docente.genero}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary" display="block">
-                        País: {postulacion.docente.pais}
-                      </Typography>
-                    </Box>
                   </TableCell>
                   <TableCell>
                     <Tooltip title="Ver detalles de formaciones académicas">
                       <IconButton 
+                        onClick={() => handleViewFormaciones(postulacion)}
                         size="small"
                         color="success"
                       >
                         <FormacionIcon />
                       </IconButton>
                     </Tooltip>
-                    <Box sx={{ mt: 1 }}>
-                      <Typography variant="caption" color="text.secondary" display="block">
-                        Total: {postulacion.formaciones_academicas.length} formaciones
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary" display="block">
-                        Último: {postulacion.formaciones_academicas[0]?.nivel_formacion || 'N/A'}
-                      </Typography>
-                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Tooltip title="Ver detalles de experiencias laborales">
+                      <IconButton 
+                        onClick={() => handleViewExperiencias(postulacion)}
+                        size="small"
+                        color="secondary"
+                      >
+                        <WorkIcon />
+                      </IconButton>
+                    </Tooltip>
                   </TableCell>
                   <TableCell>
                     <Tooltip title="Ver detalles de cursos de interés y horarios">
                       <IconButton 
+                        onClick={() => handleViewCursosHorarios(postulacion)}
                         size="small"
                         color="primary"
                       >
                         <CursosHorariosIcon />
                       </IconButton>
                     </Tooltip>
-                    <Box sx={{ mt: 1 }}>
-                      <Typography variant="caption" color="text.secondary" display="block">
-                        Cursos: {postulacion.cursosInteres.length}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary" display="block">
-                        Horarios: {postulacion.horarios.length} disponibles
-                      </Typography>
-                    </Box>
                   </TableCell>
                   <TableCell align="center">
                     <Tooltip title="Evaluar postulación">
@@ -555,6 +605,650 @@ const PostulacionesPage = () => {
               Actualizar Estado
             </Button>
           )}
+        </DialogActions>
+      </Dialog>
+
+      {/* Modal para mostrar información del docente */}
+      <Dialog 
+        open={openInfoDocenteDialog} 
+        onClose={() => setOpenInfoDocenteDialog(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle sx={{ 
+          bgcolor: 'info.main', 
+          color: 'white', 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: 1 
+        }}>
+          <InfoIcon />
+          Información Personal del Docente
+        </DialogTitle>
+        <DialogContent dividers>
+          {selectedDocente && (
+            <Grid container spacing={3} sx={{ mt: 1 }}>
+              {/* Información básica */}
+              <Grid item xs={12}>
+                <Typography variant="h6" sx={{ mb: 2, color: 'primary.main', fontWeight: 'bold' }}>
+                  Datos Personales
+                </Typography>
+              </Grid>
+              
+              <Grid item xs={12}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                  <Avatar sx={{ bgcolor: 'primary.main', width: 56, height: 56, fontSize: '1.5rem' }}>
+                    {selectedDocente.nombres?.charAt(0) || selectedDocente.nombre?.charAt(0)}
+                  </Avatar>
+                  <Box>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                      {selectedDocente.nombres} {selectedDocente.apellidos}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {selectedDocente.email}
+                    </Typography>
+                  </Box>
+                </Box>
+              </Grid>
+
+              {/* Detalles personales */}
+              <Grid item xs={12} md={6}>
+                <Paper sx={{ p: 2, bgcolor: 'grey.50' }}>
+                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                    Documento de Identidad
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 'bold', mb: 2 }}>
+                    {selectedDocente.dni || 'No especificado'}
+                  </Typography>
+                  
+                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                    Fecha de Nacimiento
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 'bold', mb: 2 }}>
+                    {selectedDocente.fecha_nacimiento ? 
+                      new Date(selectedDocente.fecha_nacimiento).toLocaleDateString('es-ES') : 
+                      'No especificada'
+                    }
+                  </Typography>
+
+                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                    Género
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                    {selectedDocente.genero || 'No especificado'}
+                  </Typography>
+                </Paper>
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <Paper sx={{ p: 2, bgcolor: 'grey.50' }}>
+                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                    País de Residencia
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 'bold', mb: 2 }}>
+                    {selectedDocente.pais || 'No especificado'}
+                  </Typography>
+                  
+                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                    Dirección
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 'bold', mb: 2 }}>
+                    {selectedDocente.direccion || 'No especificada'}
+                  </Typography>
+
+                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                    Teléfono
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                    {selectedDocente.telefono || 'No especificado'}
+                  </Typography>
+                </Paper>
+              </Grid>
+
+              {/* Información del CV */}
+              {selectedDocente.cv_archivo && (
+                <Grid item xs={12}>
+                  <Paper sx={{ p: 2, bgcolor: 'primary.50', border: '1px solid', borderColor: 'primary.200' }}>
+                    <Typography variant="subtitle2" color="primary.main" gutterBottom sx={{ fontWeight: 'bold' }}>
+                      Curriculum Vitae
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <InfoIcon color="primary" />
+                      <Typography variant="body1">
+                        Archivo: {selectedDocente.cv_archivo}
+                      </Typography>
+                      <Button 
+                        variant="outlined" 
+                        size="small" 
+                        color="primary"
+                        sx={{ ml: 'auto' }}
+                      >
+                        Descargar CV
+                      </Button>
+                    </Box>
+                  </Paper>
+                </Grid>
+              )}
+            </Grid>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button 
+            onClick={() => setOpenInfoDocenteDialog(false)}
+            variant="contained"
+            color="primary"
+          >
+            Cerrar
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Modal para mostrar formaciones académicas */}
+      <Dialog 
+        open={openFormacionesDialog} 
+        onClose={() => setOpenFormacionesDialog(false)}
+        maxWidth="lg"
+        fullWidth
+      >
+        <DialogTitle sx={{ 
+          bgcolor: 'success.main', 
+          color: 'white', 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: 1 
+        }}>
+          <FormacionIcon />
+          Formaciones Académicas del Docente
+        </DialogTitle>
+        <DialogContent dividers>
+          {selectedFormaciones && selectedFormaciones.length > 0 ? (
+            <Grid container spacing={3} sx={{ mt: 1 }}>
+              {/* Header */}
+              <Grid item xs={12}>
+                <Typography variant="h6" sx={{ mb: 2, color: 'success.main', fontWeight: 'bold' }}>
+                  Historial Académico
+                </Typography>
+              </Grid>
+              
+              {/* Lista de formaciones */}
+              {selectedFormaciones.map((formacion, index) => (
+                <Grid item xs={12} key={formacion.id}>
+                  <Paper sx={{ 
+                    p: 3, 
+                    bgcolor: 'grey.50', 
+                    border: '1px solid',
+                    borderColor: 'success.200',
+                    borderRadius: 2,
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      boxShadow: 3,
+                      borderColor: 'success.main'
+                    }
+                  }}>
+                    <Grid container spacing={3}>
+                      {/* Información principal */}
+                      <Grid item xs={12} md={8}>
+                        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
+                          <Avatar sx={{ 
+                            bgcolor: 'success.main', 
+                            width: 48, 
+                            height: 48,
+                            fontSize: '1.2rem',
+                            fontWeight: 'bold'
+                          }}>
+                            {index + 1}
+                          </Avatar>
+                          <Box sx={{ flexGrow: 1 }}>
+                            <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'success.main', mb: 1 }}>
+                              {formacion.programa_academico}
+                            </Typography>
+                            <Chip 
+                              label={formacion.nivel_formacion} 
+                              color="success" 
+                              variant="outlined"
+                              sx={{ mb: 2, fontWeight: 'bold' }}
+                            />
+                            <Typography variant="body1" sx={{ fontWeight: 600, mb: 1 }}>
+                              {formacion.institucion}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {formacion.pais}
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </Grid>
+
+                      {/* Fecha y documento */}
+                      <Grid item xs={12} md={4}>
+                        <Box sx={{ textAlign: 'right' }}>
+                          <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                            Fecha de Obtención
+                          </Typography>
+                          <Typography variant="body1" sx={{ fontWeight: 'bold', mb: 3 }}>
+                            {formacion.fecha_obtencion ? 
+                              new Date(formacion.fecha_obtencion).toLocaleDateString('es-ES', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                              }) : 
+                              'No especificada'
+                            }
+                          </Typography>
+                        </Box>
+                      </Grid>
+
+                      {/* Información del documento */}
+                      {formacion.documento_archivo && (
+                        <Grid item xs={12}>
+                          <Paper sx={{ 
+                            p: 2, 
+                            bgcolor: 'success.50', 
+                            border: '1px solid', 
+                            borderColor: 'success.200',
+                            borderRadius: 1
+                          }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                              <InfoIcon color="success" />
+                              <Typography variant="body2" sx={{ flexGrow: 1 }}>
+                                <strong>Documento:</strong> {formacion.documento_archivo}
+                              </Typography>
+                              <Button 
+                                variant="outlined" 
+                                size="small" 
+                                color="success"
+                                sx={{ minWidth: 'auto' }}
+                              >
+                                Descargar
+                              </Button>
+                            </Box>
+                          </Paper>
+                        </Grid>
+                      )}
+                    </Grid>
+                  </Paper>
+                </Grid>
+              ))}
+            </Grid>
+          ) : (
+            <Box sx={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              py: 6 
+            }}>
+              <FormacionIcon sx={{ fontSize: 64, color: 'grey.400', mb: 2 }} />
+              <Typography variant="h6" color="text.secondary" gutterBottom>
+                Sin formaciones académicas registradas
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Este docente no ha registrado ninguna formación académica.
+              </Typography>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button 
+            onClick={() => setOpenFormacionesDialog(false)}
+            variant="contained"
+            color="success"
+          >
+            Cerrar
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Modal para mostrar experiencias laborales */}
+      <Dialog 
+        open={openExperienciasDialog} 
+        onClose={() => setOpenExperienciasDialog(false)}
+        maxWidth="lg"
+        fullWidth
+      >
+        <DialogTitle sx={{ 
+          bgcolor: 'secondary.main', 
+          color: 'white', 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: 1 
+        }}>
+          <WorkIcon />
+          Experiencias Laborales del Docente
+        </DialogTitle>
+        <DialogContent dividers>
+          {selectedExperiencias && selectedExperiencias.length > 0 ? (
+            <Grid container spacing={3} sx={{ mt: 1 }}>
+              {/* Header */}
+              <Grid item xs={12}>
+                <Typography variant="h6" sx={{ mb: 2, color: 'secondary.main', fontWeight: 'bold' }}>
+                  Historial Laboral
+                </Typography>
+              </Grid>
+              
+              {/* Lista de experiencias */}
+              {selectedExperiencias.map((experiencia, index) => (
+                <Grid item xs={12} key={experiencia.id}>
+                  <Paper sx={{ 
+                    p: 3, 
+                    bgcolor: 'grey.50', 
+                    border: '1px solid',
+                    borderColor: 'secondary.200',
+                    borderRadius: 2,
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      boxShadow: 3,
+                      borderColor: 'secondary.main'
+                    }
+                  }}>
+                    <Grid container spacing={3}>
+                      {/* Información principal */}
+                      <Grid item xs={12} md={8}>
+                        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
+                          <Avatar sx={{ 
+                            bgcolor: 'secondary.main', 
+                            width: 48, 
+                            height: 48,
+                            fontSize: '1.2rem',
+                            fontWeight: 'bold'
+                          }}>
+                            {index + 1}
+                          </Avatar>
+                          <Box sx={{ flexGrow: 1 }}>
+                            <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'secondary.main', mb: 1 }}>
+                              {experiencia.cargo}
+                            </Typography>
+                            <Typography variant="body1" sx={{ fontWeight: 600, mb: 1 }}>
+                              {experiencia.empresa}
+                            </Typography>
+                            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
+                              <Chip 
+                                label={experiencia.sector} 
+                                color="secondary" 
+                                variant="outlined"
+                                size="small"
+                              />
+                              <Chip 
+                                label={experiencia.pais} 
+                                color="default" 
+                                variant="outlined"
+                                size="small"
+                              />
+                              {experiencia.actual === 1 && (
+                                <Chip 
+                                  label="Trabajo Actual" 
+                                  color="success" 
+                                  variant="filled"
+                                  size="small"
+                                  sx={{ fontWeight: 'bold' }}
+                                />
+                              )}
+                            </Box>
+                            {experiencia.ruc && (
+                              <Typography variant="body2" color="text.secondary">
+                                RUC: {experiencia.ruc}
+                              </Typography>
+                            )}
+                          </Box>
+                        </Box>
+                      </Grid>
+
+                      {/* Fechas y período */}
+                      <Grid item xs={12} md={4}>
+                        <Box sx={{ textAlign: 'right' }}>
+                          <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                            Período Laboral
+                          </Typography>
+                          <Typography variant="body1" sx={{ fontWeight: 'bold', mb: 1 }}>
+                            {experiencia.fecha_inicio ? 
+                              new Date(experiencia.fecha_inicio).toLocaleDateString('es-ES', {
+                                year: 'numeric',
+                                month: 'short'
+                              }) : 
+                              'No especificada'
+                            }
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                            hasta
+                          </Typography>
+                          <Typography variant="body1" sx={{ fontWeight: 'bold', mb: 3 }}>
+                            {experiencia.actual === 1 ? 
+                              'Actualidad' : 
+                              (experiencia.fecha_fin ? 
+                                new Date(experiencia.fecha_fin).toLocaleDateString('es-ES', {
+                                  year: 'numeric',
+                                  month: 'short'
+                                }) : 
+                                'No especificada'
+                              )
+                            }
+                          </Typography>
+                        </Box>
+                      </Grid>
+
+                      {/* Información de la constancia */}
+                      {experiencia.constancia_archivo && (
+                        <Grid item xs={12}>
+                          <Paper sx={{ 
+                            p: 2, 
+                            bgcolor: 'secondary.50', 
+                            border: '1px solid', 
+                            borderColor: 'secondary.200',
+                            borderRadius: 1
+                          }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                              <InfoIcon color="secondary" />
+                              <Typography variant="body2" sx={{ flexGrow: 1 }}>
+                                <strong>Constancia:</strong> {experiencia.constancia_archivo}
+                              </Typography>
+                              <Button 
+                                variant="outlined" 
+                                size="small" 
+                                color="secondary"
+                                sx={{ minWidth: 'auto' }}
+                              >
+                                Descargar
+                              </Button>
+                            </Box>
+                          </Paper>
+                        </Grid>
+                      )}
+                    </Grid>
+                  </Paper>
+                </Grid>
+              ))}
+            </Grid>
+          ) : (
+            <Box sx={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              py: 6 
+            }}>
+              <WorkIcon sx={{ fontSize: 64, color: 'grey.400', mb: 2 }} />
+              <Typography variant="h6" color="text.secondary" gutterBottom>
+                Sin experiencias laborales registradas
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Este docente no ha registrado ninguna experiencia laboral.
+              </Typography>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button 
+            onClick={() => setOpenExperienciasDialog(false)}
+            variant="contained"
+            color="secondary"
+          >
+            Cerrar
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Modal para mostrar cursos y horarios */}
+      <Dialog 
+        open={openCursosHorariosDialog} 
+        onClose={() => setOpenCursosHorariosDialog(false)}
+        maxWidth="lg"
+        fullWidth
+      >
+        <DialogTitle sx={{ 
+          bgcolor: 'primary.main', 
+          color: 'white', 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: 1 
+        }}>
+          <CursosHorariosIcon />
+          Cursos de Interés y Horarios Disponibles
+        </DialogTitle>
+        <DialogContent dividers>
+          {selectedCursosHorarios && (
+            <Grid container spacing={4} sx={{ mt: 1 }}>
+              {/* Sección de Cursos de Interés */}
+              <Grid item xs={12} md={6}>
+                <Typography variant="h6" sx={{ mb: 2, color: 'primary.main', fontWeight: 'bold' }}>
+                  Cursos de Interés
+                </Typography>
+                
+                {selectedCursosHorarios.cursosInteres && selectedCursosHorarios.cursosInteres.length > 0 ? (
+                  <Grid container spacing={2}>
+                    {selectedCursosHorarios.cursosInteres.map((curso, index) => (
+                      <Grid item xs={12} key={curso.id}>
+                        <Paper sx={{ 
+                          p: 2, 
+                          bgcolor: 'grey.50', 
+                          border: '1px solid',
+                          borderColor: 'primary.200',
+                          borderRadius: 2,
+                          transition: 'all 0.3s ease',
+                          '&:hover': {
+                            boxShadow: 2,
+                            borderColor: 'primary.main'
+                          }
+                        }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                            <Avatar sx={{ 
+                              bgcolor: 'primary.main', 
+                              width: 40, 
+                              height: 40,
+                              fontSize: '1rem',
+                              fontWeight: 'bold'
+                            }}>
+                              {index + 1}
+                            </Avatar>
+                            <Box sx={{ flexGrow: 1 }}>
+                              <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'primary.main', mb: 0.5 }}>
+                                {curso.nombre}
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                                Código: {curso.codigo}
+                              </Typography>
+                              {curso.ciclo && (
+                                <Chip 
+                                  label={`Ciclo ${curso.ciclo}`} 
+                                  color="primary" 
+                                  variant="outlined"
+                                  size="small"
+                                />
+                              )}
+                            </Box>
+                          </Box>
+                        </Paper>
+                      </Grid>
+                    ))}
+                  </Grid>
+                ) : (
+                  <Box sx={{ 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    py: 4 
+                  }}>
+                    <AssignmentIcon sx={{ fontSize: 48, color: 'grey.400', mb: 1 }} />
+                    <Typography variant="body1" color="text.secondary">
+                      Sin cursos de interés registrados
+                    </Typography>
+                  </Box>
+                )}
+              </Grid>
+
+              {/* Sección de Horarios Disponibles */}
+              <Grid item xs={12} md={6}>
+                <Typography variant="h6" sx={{ mb: 2, color: 'primary.main', fontWeight: 'bold' }}>
+                  Horarios Disponibles
+                </Typography>
+                
+                {selectedCursosHorarios.horarios && selectedCursosHorarios.horarios.length > 0 ? (
+                  <Grid container spacing={2}>
+                    {selectedCursosHorarios.horarios.map((horario, index) => (
+                      <Grid item xs={12} key={index}>
+                        <Paper sx={{ 
+                          p: 2, 
+                          bgcolor: 'grey.50', 
+                          border: '1px solid',
+                          borderColor: 'primary.200',
+                          borderRadius: 2,
+                          transition: 'all 0.3s ease',
+                          '&:hover': {
+                            boxShadow: 2,
+                            borderColor: 'primary.main'
+                          }
+                        }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                            <Avatar sx={{ 
+                              bgcolor: 'primary.main', 
+                              width: 40, 
+                              height: 40,
+                              fontSize: '0.9rem',
+                              fontWeight: 'bold'
+                            }}>
+                              <ScheduleIcon />
+                            </Avatar>
+                            <Box sx={{ flexGrow: 1 }}>
+                              <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'primary.main', mb: 0.5 }}>
+                                {horario.dia}
+                              </Typography>
+                              <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                {horario.hora_inicio} - {horario.hora_fin}
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                Disponibilidad: {((new Date(`1970-01-01T${horario.hora_fin}:00`) - new Date(`1970-01-01T${horario.hora_inicio}:00`)) / (1000 * 60 * 60)).toFixed(1)} horas
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </Paper>
+                      </Grid>
+                    ))}
+                  </Grid>
+                ) : (
+                  <Box sx={{ 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    py: 4 
+                  }}>
+                    <ScheduleIcon sx={{ fontSize: 48, color: 'grey.400', mb: 1 }} />
+                    <Typography variant="body1" color="text.secondary">
+                      Sin horarios disponibles registrados
+                    </Typography>
+                  </Box>
+                )}
+              </Grid>
+            </Grid>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button 
+            onClick={() => setOpenCursosHorariosDialog(false)}
+            variant="contained"
+            color="primary"
+          >
+            Cerrar
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>
