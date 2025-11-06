@@ -115,6 +115,12 @@ const Layout = () => {
       icon: <SchoolIcon />,
       path: '/cursos',
       description: 'Gestión de cursos'
+    },
+    {
+      text: 'Lista Postulaciones',
+      icon: <PostulacionIcon />,
+      path: '/postulaciones',
+      description: 'Gestión de Postulaciones'
     }
   ];
 

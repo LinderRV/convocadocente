@@ -115,7 +115,9 @@ class AuthService {
         const payload = {
             id: user.id,
             email: user.email,
-            nombre: user.nombre
+            nombre: user.nombre,
+            roles: user.roles || [], // Incluir roles del usuario
+            rol: user.roles && user.roles.length > 0 ? user.roles[0] : null // Primer rol como rol principal
         };
 
         return jwt.sign(payload, process.env.JWT_SECRET || 'fallback_secret', {

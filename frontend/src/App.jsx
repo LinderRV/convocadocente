@@ -68,7 +68,7 @@ function App() {
               } />
               <Route path="cursos" element={<CursosPage />} />
               <Route path="postulaciones" element={
-                <ProtectedRoute allowedRoles={['admin', 'decano']}>
+                <ProtectedRoute allowedRoles={['admin', 'decano', 'director']}>
                   <PostulacionesPage />
                 </ProtectedRoute>
               } />

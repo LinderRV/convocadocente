@@ -13,14 +13,25 @@ class PostulacionesController {
 
       console.log('🔍 Iniciando consulta de postulaciones...');
       console.log('📝 Parámetros validados:', { pageNum, limitNum, offset });
-      console.log('📝 Tipos de parámetros:', { 
-        limitNum: typeof limitNum, 
-        offset: typeof offset,
-        limitNumValue: limitNum,
-        offsetValue: offset
-      });
+      console.log('📝 Usuario logueado:', req.user.id, req.user.rol);
 
-      // Query principal con JOIN completo para obtener TODOS los datos reales
+      // Determinar filtro según rol del usuario
+      let whereClause = 'WHERE u.estado = 1';
+      let joinClause = '';
+      
+      // Si es Director, filtrar solo postulaciones de SU especialidad
+      if (req.user.rol === 'Director') {
+        joinClause = `
+          INNER JOIN usuario_especialidad ue ON 
+            p.c_codfac = ue.c_codfac AND 
+            p.c_codesp = ue.c_codesp AND 
+            ue.user_id = ?
+        `;
+        whereClause = 'WHERE u.estado = 1';
+        console.log('👨‍💼 Director detectado - Filtrando por especialidad del usuario:', req.user.id);
+      }
+
+      // Query principal con JOIN completo para obtener datos reales
       const mainQuery = `
         SELECT 
           p.id,
@@ -61,7 +72,8 @@ class PostulacionesController {
         LEFT JOIN especialidades e ON p.c_codfac = e.c_codfac AND p.c_codesp = e.c_codesp
         LEFT JOIN facultades f ON p.c_codfac = f.c_codfac
         LEFT JOIN usuarios eval_u ON p.evaluador_user_id = eval_u.id
-        WHERE u.estado = 1
+        ${joinClause}
+        ${whereClause}
         ORDER BY p.fecha_postulacion DESC
       `;
 
@@ -69,19 +81,36 @@ class PostulacionesController {
         SELECT COUNT(*) as total
         FROM postulaciones_cursos_especialidad p
         INNER JOIN usuarios u ON p.user_id = u.id
-        WHERE u.estado = 1
+        ${joinClause}
+        ${whereClause}
       `;
 
       console.log('🔍 Ejecutando query principal con datos completos...');
-      const [allResults] = await pool.execute(mainQuery);
-      console.log('✅ Query principal ejecutada, filas totales:', allResults.length);
+      
+      // Ejecutar queries con parámetros según el rol
+      let allResults, countResults;
+      
+      if (req.user.rol === 'Director') {
+        // Para Director: filtrar por SU especialidad
+        const [results] = await pool.execute(mainQuery, [req.user.id]);
+        const [count] = await pool.execute(countQuery, [req.user.id]);
+        allResults = results;
+        countResults = count;
+        console.log('✅ Query para Director ejecutada, postulaciones de su especialidad:', allResults.length);
+      } else {
+        // Para Administrador/Decano: ver todas las postulaciones
+        const [results] = await pool.execute(mainQuery);
+        const [count] = await pool.execute(countQuery);
+        allResults = results;
+        countResults = count;
+        console.log('✅ Query para Admin/Decano ejecutada, todas las postulaciones:', allResults.length);
+      }
       
       // Aplicar paginación manualmente
       const postulaciones = allResults.slice(offset, offset + limitNum);
       console.log('✅ Paginación manual aplicada, filas en página:', postulaciones.length);
       
-      const [countResult] = await pool.execute(countQuery);
-      const total = countResult[0].total;
+      const total = countResults[0].total;
 
       // Para cada postulación, obtener datos adicionales y formatear respuesta completa
       const postulacionesFormatted = await Promise.all(postulaciones.map(async (p) => {
