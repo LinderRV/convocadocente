@@ -53,9 +53,14 @@ import {
   Schedule as CursosHorariosIcon
 } from '@mui/icons-material';
 
+// 🚀 IMPORTAR API REAL
+import PostulacionAPI from '../services/postulacionAPI';
+
 const PostulacionesPage = () => {
   const [postulaciones, setPostulaciones] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [totalPages, setTotalPages] = useState(1);
   const [selectedPostulacion, setSelectedPostulacion] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [dialogType, setDialogType] = useState('view'); // 'view', 'edit', 'approve', 'reject', 'evaluar'
@@ -75,233 +80,63 @@ const PostulacionesPage = () => {
   const [openCursosHorariosDialog, setOpenCursosHorariosDialog] = useState(false);
   const [selectedCursosHorarios, setSelectedCursosHorarios] = useState(null);
 
-  // Datos mockeados para desarrollo basados en el esquema real
-  const mockPostulaciones = [
-    {
-      id: 1,
-      docente: {
-        id: 11,
-        nombre: 'Pedro', // De usuarios.nombre
-        email: 'pedro.rojas@uma.edu.pe',
-        telefono: '912234934',
-        dni: '7563221',
-        cv_archivo: 'cv_11_1762279121199.docx',
-        // Información adicional de la tabla docentes
-        nombres: 'drmedicina',
-        apellidos: 'ROJAS PEREZ',
-        fecha_nacimiento: '1999-12-20',
-        genero: 'Masculino',
-        pais: 'Japón',
-        direccion: 'av el muro o este'
-      },
-      // Formaciones académicas de la tabla formaciones_academicas (user_id=11)
-      formaciones_academicas: [
-        {
-          id: 1,
-          nivel_formacion: 'Maestría',
-          programa_academico: 'SALUD PUBLICA',
-          institucion: 'USENS',
-          pais: 'ESPAÑA',
-          fecha_obtencion: '2000-10-20',
-          documento_archivo: 'formacion_11_1762289915788.pdf'
-        },
-        {
-          id: 2,
-          nivel_formacion: 'Licenciatura',
-          programa_academico: 'ENFERMERIA',
-          institucion: 'NOTBERT WINNER',
-          pais: 'PERU',
-          fecha_obtencion: '2024-01-20',
-          documento_archivo: 'formacion_11_1762289907765.pdf'
-        },
-        {
-          id: 3,
-          nivel_formacion: 'Post-Doctorado',
-          programa_academico: 'EN QUIROFANO',
-          institucion: 'UNGENS',
-          pais: 'CHILE',
-          fecha_obtencion: '2024-02-20',
-          documento_archivo: 'formacion_11_1762290039781.pdf'
-        }
-      ],
-      // Experiencias laborales de la tabla experiencias_laborales (user_id=11)
-      experiencias_laborales: [
-        {
-          id: 1,
-          pais: 'OLANDA',
-          sector: 'Privado',
-          empresa: 'GLORIA',
-          ruc: '12020123456',
-          cargo: 'CAJERO',
-          fecha_inicio: '2023-12-10',
-          fecha_fin: '2024-10-20',
-          actual: 0,
-          constancia_archivo: 'experiencia_11_1762295549229.pdf'
-        },
-        {
-          id: 2,
-          pais: 'Argentina',
-          sector: 'Privado',
-          empresa: 'Renic',
-          ruc: '12345678965',
-          cargo: 'Contador',
-          fecha_inicio: '1999-02-10',
-          fecha_fin: '2001-02-20',
-          actual: 0,
-          constancia_archivo: 'experiencia_11_1762293790690.pdf'
-        },
-        {
-          id: 3,
-          pais: 'Chile',
-          sector: 'Público',
-          empresa: 'Universidad del Sur',
-          ruc: '78945632152',
-          cargo: 'Docente',
-          fecha_inicio: '2025-02-20',
-          fecha_fin: null,
-          actual: 1,
-          constancia_archivo: 'experiencia_11_1762295587049.pdf'
-        }
-      ],
-      especialidad: {
-        codigo: 'S1',
-        nombre: 'ENFERMERÍA',
-        facultad: 'CIENCIAS DE LA SALUD'
-      },
-      estado: 'PENDIENTE',
-      fecha_postulacion: '2025-11-06T00:35:35Z',
-      evaluador: {
-        id: 10,
-        nombre: 'James Pérez lima',
-        email: 'james.perezlima@gmail.com'
-      },
-      cursosInteres: [
-        { id: 3, codigo: 'ESG0201', nombre: 'LIDERAZGO', ciclo: null },
-        { id: 1, codigo: 'COUD002', nombre: 'Matemáticas', ciclo: null }
-      ],
-      horarios: [
-        { dia: 'Lunes', hora_inicio: '10:00', hora_fin: '20:00' },
-        { dia: 'Miércoles', hora_inicio: '13:00', hora_fin: '21:30' }
-      ],
-      comentario_evaluacion: null
-    },
-    {
-      id: 2,
-      docente: {
-        id: 11,
-        nombre: 'Pedro', // Mismo docente, postulación diferente
-        email: 'pedro.rojas@uma.edu.pe',
-        telefono: '912234934',
-        dni: '7563221',
-        cv_archivo: 'cv_11_1762279121199.docx',
-        // Información adicional de la tabla docentes
-        nombres: 'drmedicina',
-        apellidos: 'ROJAS PEREZ',
-        fecha_nacimiento: '1999-12-20',
-        genero: 'Masculino',
-        pais: 'Japón',
-        direccion: 'av el muro o este'
-      },
-      // Mismas formaciones académicas
-      formaciones_academicas: [
-        {
-          id: 1,
-          nivel_formacion: 'Maestría',
-          programa_academico: 'SALUD PUBLICA',
-          institucion: 'USENS',
-          pais: 'ESPAÑA',
-          fecha_obtencion: '2000-10-20',
-          documento_archivo: 'formacion_11_1762289915788.pdf'
-        },
-        {
-          id: 2,
-          nivel_formacion: 'Licenciatura',
-          programa_academico: 'ENFERMERIA',
-          institucion: 'NOTBERT WINNER',
-          pais: 'PERU',
-          fecha_obtencion: '2024-01-20',
-          documento_archivo: 'formacion_11_1762289907765.pdf'
-        },
-        {
-          id: 3,
-          nivel_formacion: 'Post-Doctorado',
-          programa_academico: 'EN QUIROFANO',
-          institucion: 'UNGENS',
-          pais: 'CHILE',
-          fecha_obtencion: '2024-02-20',
-          documento_archivo: 'formacion_11_1762290039781.pdf'
-        }
-      ],
-      // Mismas experiencias laborales
-      experiencias_laborales: [
-        {
-          id: 1,
-          pais: 'OLANDA',
-          sector: 'Privado',
-          empresa: 'GLORIA',
-          ruc: '12020123456',
-          cargo: 'CAJERO',
-          fecha_inicio: '2023-12-10',
-          fecha_fin: '2024-10-20',
-          actual: 0,
-          constancia_archivo: 'experiencia_11_1762295549229.pdf'
-        },
-        {
-          id: 2,
-          pais: 'Argentina',
-          sector: 'Privado',
-          empresa: 'Renic',
-          ruc: '12345678965',
-          cargo: 'Contador',
-          fecha_inicio: '1999-02-10',
-          fecha_fin: '2001-02-20',
-          actual: 0,
-          constancia_archivo: 'experiencia_11_1762293790690.pdf'
-        },
-        {
-          id: 3,
-          pais: 'Chile',
-          sector: 'Público',
-          empresa: 'Universidad del Sur',
-          ruc: '78945632152',
-          cargo: 'Docente',
-          fecha_inicio: '2025-02-20',
-          fecha_fin: null,
-          actual: 1,
-          constancia_archivo: 'experiencia_11_1762295587049.pdf'
-        }
-      ],
-      especialidad: {
-        codigo: 'S2',
-        nombre: 'FARMACIA Y BIOQUÍMICA',
-        facultad: 'CIENCIAS DE LA SALUD'
-      },
-      estado: 'PENDIENTE',
-      fecha_postulacion: '2025-11-06T00:36:42Z',
-      evaluador: {
-        id: 12,
-        nombre: 'JUAN TOBAR',
-        email: 'juan.tovar@uma.edu.pe'
-      },
-      cursosInteres: [
-        { id: 4, codigo: 'SESG3013', nombre: 'MÉTODOS DE ESTUDIO', ciclo: null },
-        { id: 5, codigo: 'SCTS3022', nombre: 'QUÍMICA GENERAL', ciclo: null }
-      ],
-      horarios: [
-        { dia: 'Jueves', hora_inicio: '14:00', hora_fin: '21:40' },
-        { dia: 'Sábado', hora_inicio: '09:20', hora_fin: '23:00' }
-      ],
-      comentario_evaluacion: null
+  // 🚀 CARGAR DATOS REALES DESDE LA API
+  const loadPostulaciones = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      console.log('🔍 Cargando postulaciones desde API...', { page, rowsPerPage });
+      
+      const response = await PostulacionAPI.fetchPostulaciones({
+        page,
+        limit: rowsPerPage
+      });
+
+      console.log('✅ Postulaciones cargadas:', response);
+      
+      setPostulaciones(response.data);
+      setTotalPages(response.pagination.totalPages);
+      
+    } catch (error) {
+      console.error('❌ Error al cargar postulaciones:', error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
   useEffect(() => {
-    // Simular carga de datos
-    setTimeout(() => {
-      setPostulaciones(mockPostulaciones);
+    loadPostulaciones();
+  }, [page]);
+
+  // 🚀 ACTUALIZAR ESTADO DE POSTULACIÓN
+  const handleUpdateEstado = async (id, estado, comentario_evaluacion) => {
+    try {
+      setLoading(true);
+      
+      await PostulacionAPI.updatePostulacionEstado(id, {
+        estado,
+        comentario_evaluacion
+      });
+
+      // Recargar datos después de actualizar
+      await loadPostulaciones();
+      
+      // Cerrar modales
+      setOpenDialog(false);
+      setSelectedPostulacion(null);
+      setNuevoEstado('');
+      setMensajeEvaluacion('');
+      
+    } catch (error) {
+      console.error('❌ Error al actualizar estado:', error);
+      setError(error.message);
+    } finally {
       setLoading(false);
-    }, 1000);
-  }, []);
+    }
+  };
+  }
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -383,18 +218,36 @@ const PostulacionesPage = () => {
     setOpenCursosHorariosDialog(true);
   };
 
-  // Cálculos para paginación
-  const totalPages = Math.ceil(postulaciones.length / rowsPerPage);
-  const startIndex = (page - 1) * rowsPerPage;
-  const endIndex = startIndex + rowsPerPage;
-  const paginatedPostulaciones = postulaciones.slice(startIndex, endIndex);
+  // 🚀 PAGINACIÓN REAL DESDE API (no más cálculos manuales)
+  const paginatedPostulaciones = postulaciones; // Ya vienen paginados del backend
 
   const handlePageChange = (event, value) => {
     setPage(value);
   };
 
+  // 🚀 LOADING Y ERROR HANDLING
   if (loading) {
-    return null;
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px' }}>
+        <Box sx={{ textAlign: 'center' }}>
+          <Typography variant="h6" sx={{ mb: 2 }}>Cargando postulaciones...</Typography>
+        </Box>
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Alert severity="error" sx={{ mb: 3 }}>
+          <Typography variant="h6">Error al cargar postulaciones</Typography>
+          <Typography>{error}</Typography>
+          <Button variant="contained" onClick={() => loadPostulaciones()} sx={{ mt: 2 }}>
+            Reintentar
+          </Button>
+        </Alert>
+      </Box>
+    );
   }
 
   return (
@@ -601,6 +454,7 @@ const PostulacionesPage = () => {
               variant="contained" 
               color="primary"
               disabled={!nuevoEstado || ((nuevoEstado === 'APROBADO' || nuevoEstado === 'RECHAZADO') && !mensajeEvaluacion)}
+              onClick={() => handleUpdateEstado(selectedPostulacion.id, nuevoEstado, mensajeEvaluacion)}
             >
               Actualizar Estado
             </Button>

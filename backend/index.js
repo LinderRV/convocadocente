@@ -13,6 +13,7 @@ const { testConnection } = require('./src/config/database');
 const authRoutes = require('./src/routes/authRoutes');
 const usuariosRoutes = require('./src/routes/usuariosRoutes');
 const cursosRoutes = require('./src/routes/cursosRoutes');
+const postulacionesRoutes = require('./src/routes/postulacionesRoutes');
 
 // Importar rutas de docentes
 const formacionesRoutes = require('./src/routes/docentes/formacionesRoutes');
@@ -58,6 +59,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/auth', authRoutes);
 app.use('/api/usuarios', usuariosRoutes);
 app.use('/api/cursos', cursosRoutes);
+app.use('/api/postulaciones', postulacionesRoutes);
 
 // Rutas de docentes
 app.use('/api/docentes/formaciones', formacionesRoutes);
