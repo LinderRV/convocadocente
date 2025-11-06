@@ -53,14 +53,12 @@ import {
   Schedule as CursosHorariosIcon
 } from '@mui/icons-material';
 
-// 🚀 IMPORTAR API REAL
-import PostulacionAPI from '../services/postulacionAPI';
+// Importar API
+import { postulacionesAPI } from '../services/postulacionesAPI';
 
 const PostulacionesPage = () => {
   const [postulaciones, setPostulaciones] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [totalPages, setTotalPages] = useState(1);
   const [selectedPostulacion, setSelectedPostulacion] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [dialogType, setDialogType] = useState('view'); // 'view', 'edit', 'approve', 'reject', 'evaluar'
@@ -80,27 +78,16 @@ const PostulacionesPage = () => {
   const [openCursosHorariosDialog, setOpenCursosHorariosDialog] = useState(false);
   const [selectedCursosHorarios, setSelectedCursosHorarios] = useState(null);
 
-  // 🚀 CARGAR DATOS REALES DESDE LA API
+  // Cargar postulaciones desde la API
   const loadPostulaciones = async () => {
     try {
       setLoading(true);
-      setError(null);
-      
-      console.log('🔍 Cargando postulaciones desde API...', { page, rowsPerPage });
-      
-      const response = await PostulacionAPI.fetchPostulaciones({
-        page,
-        limit: rowsPerPage
-      });
-
-      console.log('✅ Postulaciones cargadas:', response);
-      
+      const response = await postulacionesAPI.getPostulaciones(page, rowsPerPage);
       setPostulaciones(response.data);
-      setTotalPages(response.pagination.totalPages);
-      
     } catch (error) {
-      console.error('❌ Error al cargar postulaciones:', error);
-      setError(error.message);
+      console.error('Error al cargar postulaciones:', error);
+      // Mantener array vacío en caso de error
+      setPostulaciones([]);
     } finally {
       setLoading(false);
     }
@@ -108,35 +95,7 @@ const PostulacionesPage = () => {
 
   useEffect(() => {
     loadPostulaciones();
-  }, [page]);
-
-  // 🚀 ACTUALIZAR ESTADO DE POSTULACIÓN
-  const handleUpdateEstado = async (id, estado, comentario_evaluacion) => {
-    try {
-      setLoading(true);
-      
-      await PostulacionAPI.updatePostulacionEstado(id, {
-        estado,
-        comentario_evaluacion
-      });
-
-      // Recargar datos después de actualizar
-      await loadPostulaciones();
-      
-      // Cerrar modales
-      setOpenDialog(false);
-      setSelectedPostulacion(null);
-      setNuevoEstado('');
-      setMensajeEvaluacion('');
-      
-    } catch (error) {
-      console.error('❌ Error al actualizar estado:', error);
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-  }
+  }, [page, rowsPerPage]);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -195,6 +154,28 @@ const PostulacionesPage = () => {
     setOpenDialog(true);
   };
 
+  // Manejar actualización de estado
+  const handleUpdateEstado = async () => {
+    try {
+      await postulacionesAPI.updateEstado(selectedPostulacion.id, {
+        estado: nuevoEstado,
+        comentario_evaluacion: mensajeEvaluacion
+      });
+      
+      // Recargar datos
+      await loadPostulaciones();
+      
+      // Cerrar modal
+      setOpenDialog(false);
+      setSelectedPostulacion(null);
+      setNuevoEstado('');
+      setMensajeEvaluacion('');
+    } catch (error) {
+      console.error('Error al actualizar estado:', error);
+      // Aquí podrías mostrar un mensaje de error al usuario
+    }
+  };
+
   const handleViewInfoDocente = (postulacion) => {
     setSelectedDocente(postulacion.docente);
     setOpenInfoDocenteDialog(true);
@@ -218,36 +199,18 @@ const PostulacionesPage = () => {
     setOpenCursosHorariosDialog(true);
   };
 
-  // 🚀 PAGINACIÓN REAL DESDE API (no más cálculos manuales)
-  const paginatedPostulaciones = postulaciones; // Ya vienen paginados del backend
+  // Cálculos para paginación
+  const totalPages = Math.ceil(postulaciones.length / rowsPerPage);
+  const startIndex = (page - 1) * rowsPerPage;
+  const endIndex = startIndex + rowsPerPage;
+  const paginatedPostulaciones = postulaciones.slice(startIndex, endIndex);
 
   const handlePageChange = (event, value) => {
     setPage(value);
   };
 
-  // 🚀 LOADING Y ERROR HANDLING
   if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px' }}>
-        <Box sx={{ textAlign: 'center' }}>
-          <Typography variant="h6" sx={{ mb: 2 }}>Cargando postulaciones...</Typography>
-        </Box>
-      </Box>
-    );
-  }
-
-  if (error) {
-    return (
-      <Box sx={{ p: 3 }}>
-        <Alert severity="error" sx={{ mb: 3 }}>
-          <Typography variant="h6">Error al cargar postulaciones</Typography>
-          <Typography>{error}</Typography>
-          <Button variant="contained" onClick={() => loadPostulaciones()} sx={{ mt: 2 }}>
-            Reintentar
-          </Button>
-        </Alert>
-      </Box>
-    );
+    return null;
   }
 
   return (
@@ -453,8 +416,8 @@ const PostulacionesPage = () => {
             <Button 
               variant="contained" 
               color="primary"
+              onClick={handleUpdateEstado}
               disabled={!nuevoEstado || ((nuevoEstado === 'APROBADO' || nuevoEstado === 'RECHAZADO') && !mensajeEvaluacion)}
-              onClick={() => handleUpdateEstado(selectedPostulacion.id, nuevoEstado, mensajeEvaluacion)}
             >
               Actualizar Estado
             </Button>

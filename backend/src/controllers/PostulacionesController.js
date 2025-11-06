@@ -1,59 +1,70 @@
-const db = require('../config/database');
+const { pool } = require('../config/database');
 
 class PostulacionesController {
-  // Obtener todas las postulaciones para la tabla principal
+  // Obtener todas las postulaciones para la tabla
   static async getPostulaciones(req, res) {
     try {
-      const page = parseInt(req.query.page) || 1;
-      const limit = parseInt(req.query.limit) || 5;
-      const offset = (page - 1) * limit;
+      const { page = 1, limit = 5 } = req.query;
+      
+      // Validar y convertir parámetros asegurando que sean enteros válidos
+      const pageNum = Math.max(1, parseInt(page) || 1);
+      const limitNum = Math.max(1, Math.min(100, parseInt(limit) || 5));
+      const offset = (pageNum - 1) * limitNum;
 
-      // Query principal para la tabla con JOINs necesarios
-      const query = `
+      console.log('🔍 Iniciando consulta de postulaciones...');
+      console.log('📝 Parámetros validados:', { pageNum, limitNum, offset });
+      console.log('📝 Tipos de parámetros:', { 
+        limitNum: typeof limitNum, 
+        offset: typeof offset,
+        limitNumValue: limitNum,
+        offsetValue: offset
+      });
+
+      // Query principal con JOIN completo para obtener TODOS los datos reales
+      const mainQuery = `
         SELECT 
           p.id,
           p.estado,
           p.fecha_postulacion,
           p.comentario_evaluacion,
+          p.c_codfac,
+          p.c_codesp,
+          p.evaluador_user_id,
           
-          -- Datos del docente (usuario)
+          -- Datos del docente desde usuarios
           u.id as docente_id,
           u.nombre as docente_nombre,
           u.email as docente_email,
           
-          -- Datos adicionales del docente
+          -- Datos adicionales del docente desde tabla docentes
           d.nombres as docente_nombres,
           d.apellidos as docente_apellidos,
-          d.dni,
-          d.fecha_nacimiento,
-          d.genero,
-          d.pais,
-          d.direccion,
-          d.telefono,
-          d.cv_archivo,
+          d.dni as docente_dni,
+          d.telefono as docente_telefono,
+          d.cv_archivo as docente_cv,
+          d.fecha_nacimiento as docente_fecha_nacimiento,
+          d.genero as docente_genero,
+          d.pais as docente_pais,
+          d.direccion as docente_direccion,
           
-          -- Datos de la especialidad
-          p.c_codesp as especialidad_codigo,
+          -- Datos de especialidad
           e.nomesp as especialidad_nombre,
           f.nom_fac as facultad_nombre,
           
           -- Datos del evaluador
-          eval.id as evaluador_id,
-          eval.nombre as evaluador_nombre,
-          eval.email as evaluador_email
+          eval_u.nombre as evaluador_nombre,
+          eval_u.email as evaluador_email
           
         FROM postulaciones_cursos_especialidad p
         INNER JOIN usuarios u ON p.user_id = u.id
         LEFT JOIN docentes d ON u.id = d.user_id
-        INNER JOIN especialidades e ON p.c_codfac = e.c_codfac AND p.c_codesp = e.c_codesp
-        INNER JOIN facultades f ON e.c_codfac = f.c_codfac
-        LEFT JOIN usuarios eval ON p.evaluador_user_id = eval.id
+        LEFT JOIN especialidades e ON p.c_codfac = e.c_codfac AND p.c_codesp = e.c_codesp
+        LEFT JOIN facultades f ON p.c_codfac = f.c_codfac
+        LEFT JOIN usuarios eval_u ON p.evaluador_user_id = eval_u.id
         WHERE u.estado = 1
         ORDER BY p.fecha_postulacion DESC
-        LIMIT ? OFFSET ?
       `;
 
-      // Query para contar total de registros
       const countQuery = `
         SELECT COUNT(*) as total
         FROM postulaciones_cursos_especialidad p
@@ -61,117 +72,137 @@ class PostulacionesController {
         WHERE u.estado = 1
       `;
 
-      // Ejecutar ambas queries
-      const [postulaciones] = await db.execute(query, [limit, offset]);
-      const [countResult] = await db.execute(countQuery);
+      console.log('🔍 Ejecutando query principal con datos completos...');
+      const [allResults] = await pool.execute(mainQuery);
+      console.log('✅ Query principal ejecutada, filas totales:', allResults.length);
+      
+      // Aplicar paginación manualmente
+      const postulaciones = allResults.slice(offset, offset + limitNum);
+      console.log('✅ Paginación manual aplicada, filas en página:', postulaciones.length);
+      
+      const [countResult] = await pool.execute(countQuery);
       const total = countResult[0].total;
 
-      // Para cada postulación, obtener formaciones académicas
-      for (let postulacion of postulaciones) {
-        // Formaciones académicas
-        const [formaciones] = await db.execute(`
-          SELECT id, nivel_formacion, programa_academico, institucion, pais, fecha_obtencion, documento_archivo
+      // Para cada postulación, obtener datos adicionales y formatear respuesta completa
+      const postulacionesFormatted = await Promise.all(postulaciones.map(async (p) => {
+        
+        // Obtener formaciones académicas
+        const [formaciones] = await pool.execute(`
+          SELECT nivel_formacion, programa_academico, institucion, pais, fecha_obtencion, documento_archivo
           FROM formaciones_academicas 
           WHERE user_id = ?
           ORDER BY fecha_obtencion DESC
-        `, [postulacion.docente_id]);
+        `, [p.docente_id]);
 
-        // Experiencias laborales
-        const [experiencias] = await db.execute(`
-          SELECT id, pais, sector, empresa, ruc, cargo, fecha_inicio, fecha_fin, actual, constancia_archivo
+        // Obtener experiencias laborales
+        const [experiencias] = await pool.execute(`
+          SELECT pais, sector, empresa, ruc, cargo, fecha_inicio, fecha_fin, actual, constancia_archivo
           FROM experiencias_laborales 
           WHERE user_id = ?
           ORDER BY fecha_inicio DESC
-        `, [postulacion.docente_id]);
+        `, [p.docente_id]);
 
-        // Cursos de interés para esta postulación específica
-        const [cursosInteres] = await db.execute(`
-          SELECT 
-            pec.id,
-            pec.c_codcur as codigo,
-            pec.c_nomcur as nombre,
-            pec.n_ciclo as ciclo
+        // Obtener cursos de interés para esta postulación
+        const [cursosInteres] = await pool.execute(`
+          SELECT pec.c_nomcur as nombre_curso, pec.c_codcur as codigo_curso, pec.n_ciclo
           FROM docente_cursos_interes dci
           INNER JOIN plan_estudio_curso pec ON dci.plan_estudio_curso_id = pec.id
-          WHERE dci.postulacion_id = ?
-          ORDER BY pec.c_nomcur
-        `, [postulacion.id]);
+          WHERE dci.user_id = ? AND dci.postulacion_id = ?
+        `, [p.docente_id, p.id]);
 
-        // Horarios disponibles para esta postulación específica
-        const [horarios] = await db.execute(`
-          SELECT dia_semana as dia, TIME_FORMAT(hora_inicio, '%H:%i') as hora_inicio, TIME_FORMAT(hora_fin, '%H:%i') as hora_fin
+        // Obtener horarios disponibles para esta postulación
+        const [horarios] = await pool.execute(`
+          SELECT dia_semana, hora_inicio, hora_fin
           FROM docente_horarios 
-          WHERE postulacion_id = ?
-          ORDER BY FIELD(dia_semana, 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo')
-        `, [postulacion.id]);
+          WHERE user_id = ? AND postulacion_id = ?
+          ORDER BY 
+            CASE dia_semana 
+              WHEN 'Lunes' THEN 1 
+              WHEN 'Martes' THEN 2 
+              WHEN 'Miércoles' THEN 3 
+              WHEN 'Jueves' THEN 4 
+              WHEN 'Viernes' THEN 5 
+              WHEN 'Sábado' THEN 6 
+              WHEN 'Domingo' THEN 7 
+            END
+        `, [p.docente_id, p.id]);
 
-        // Estructurar datos según mockup
-        postulacion.docente = {
-          id: postulacion.docente_id,
-          nombre: postulacion.docente_nombre,
-          email: postulacion.docente_email,
-          telefono: postulacion.telefono,
-          dni: postulacion.dni,
-          cv_archivo: postulacion.cv_archivo,
-          nombres: postulacion.docente_nombres,
-          apellidos: postulacion.docente_apellidos,
-          fecha_nacimiento: postulacion.fecha_nacimiento,
-          genero: postulacion.genero,
-          pais: postulacion.pais,
-          direccion: postulacion.direccion
+        return {
+          id: p.id,
+          docente: {
+            id: p.docente_id,
+            nombre: p.docente_nombre,
+            email: p.docente_email,
+            telefono: p.docente_telefono,
+            dni: p.docente_dni,
+            cv_archivo: p.docente_cv,
+            nombres: p.docente_nombres,
+            apellidos: p.docente_apellidos,
+            fecha_nacimiento: p.docente_fecha_nacimiento,
+            genero: p.docente_genero,
+            pais: p.docente_pais,
+            direccion: p.docente_direccion
+          },
+          formaciones_academicas: formaciones.map(f => ({
+            nivel_formacion: f.nivel_formacion,
+            programa_academico: f.programa_academico,
+            institucion: f.institucion,
+            pais: f.pais,
+            fecha_obtencion: f.fecha_obtencion,
+            documento_archivo: f.documento_archivo
+          })),
+          experiencias_laborales: experiencias.map(exp => ({
+            pais: exp.pais,
+            sector: exp.sector,
+            empresa: exp.empresa,
+            ruc: exp.ruc,
+            cargo: exp.cargo,
+            fecha_inicio: exp.fecha_inicio,
+            fecha_fin: exp.fecha_fin,
+            actual: exp.actual,
+            constancia_archivo: exp.constancia_archivo
+          })),
+          especialidad: {
+            codigo: `${p.c_codfac}${p.c_codesp}`,
+            nombre: p.especialidad_nombre,
+            facultad: p.facultad_nombre
+          },
+          estado: p.estado,
+          fecha_postulacion: p.fecha_postulacion,
+          evaluador: {
+            id: p.evaluador_user_id,
+            nombre: p.evaluador_nombre,
+            email: p.evaluador_email
+          },
+          cursosInteres: cursosInteres.map(curso => ({
+            codigo: curso.codigo_curso,
+            nombre: curso.nombre_curso,
+            ciclo: curso.n_ciclo
+          })),
+          horarios: horarios.map(h => ({
+            dia: h.dia_semana,
+            hora_inicio: h.hora_inicio,
+            hora_fin: h.hora_fin
+          })),
+          comentario_evaluacion: p.comentario_evaluacion
         };
+      }));
 
-        postulacion.especialidad = {
-          codigo: postulacion.especialidad_codigo,
-          nombre: postulacion.especialidad_nombre,
-          facultad: postulacion.facultad_nombre
-        };
-
-        postulacion.evaluador = {
-          id: postulacion.evaluador_id,
-          nombre: postulacion.evaluador_nombre,
-          email: postulacion.evaluador_email
-        };
-
-        postulacion.formaciones_academicas = formaciones;
-        postulacion.experiencias_laborales = experiencias;
-        postulacion.cursosInteres = cursosInteres;
-        postulacion.horarios = horarios;
-
-        // Limpiar campos duplicados
-        delete postulacion.docente_id;
-        delete postulacion.docente_nombre;
-        delete postulacion.docente_email;
-        delete postulacion.docente_nombres;
-        delete postulacion.docente_apellidos;
-        delete postulacion.dni;
-        delete postulacion.fecha_nacimiento;
-        delete postulacion.genero;
-        delete postulacion.pais;
-        delete postulacion.direccion;
-        delete postulacion.telefono;
-        delete postulacion.cv_archivo;
-        delete postulacion.especialidad_codigo;
-        delete postulacion.especialidad_nombre;
-        delete postulacion.facultad_nombre;
-        delete postulacion.evaluador_id;
-        delete postulacion.evaluador_nombre;
-        delete postulacion.evaluador_email;
-      }
-
+      console.log('✅ Datos procesados, enviando respuesta...');
       res.json({
         success: true,
-        data: postulaciones,
+        data: postulacionesFormatted,
         pagination: {
-          page,
-          limit,
+          page: pageNum,
+          limit: limitNum,
           total,
-          totalPages: Math.ceil(total / limit)
+          totalPages: Math.ceil(total / limitNum)
         }
       });
 
     } catch (error) {
-      console.error('Error al obtener postulaciones:', error);
+      console.error('❌ Error al obtener postulaciones:', error);
+      console.error('❌ Stack trace:', error.stack);
       res.status(500).json({
         success: false,
         message: 'Error interno del servidor',
@@ -180,13 +211,12 @@ class PostulacionesController {
     }
   }
 
-  // Actualizar estado de una postulación (para el modal de evaluación)
-  static async updateEstadoPostulacion(req, res) {
+  // Actualizar estado de postulación
+  static async updateEstado(req, res) {
     try {
       const { id } = req.params;
       const { estado, comentario_evaluacion } = req.body;
 
-      // Validar estado
       const estadosValidos = ['PENDIENTE', 'EVALUANDO', 'APROBADO', 'RECHAZADO'];
       if (!estadosValidos.includes(estado)) {
         return res.status(400).json({
@@ -195,8 +225,7 @@ class PostulacionesController {
         });
       }
 
-      // Actualizar postulación
-      const [result] = await db.execute(`
+      const [result] = await pool.execute(`
         UPDATE postulaciones_cursos_especialidad 
         SET estado = ?, comentario_evaluacion = ?
         WHERE id = ?
