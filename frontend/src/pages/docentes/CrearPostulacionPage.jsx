@@ -31,7 +31,7 @@ import {
   Category as CategoryIcon,
   ExpandMore as ExpandMoreIcon
 } from '@mui/icons-material';
-import { postulacionDocenteAPI } from '../../services/docentes/postulacionDocenteAPI';
+import postulacionDocenteAPI from '../../services/docentes/postulacionDocenteAPI';
 
 const CrearPostulacionPage = () => {
   const [alert, setAlert] = useState(null);

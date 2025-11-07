@@ -33,7 +33,7 @@ import {
   Upload as UploadIcon
 } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
-import { experienciasAPI } from '../../services/docentes/experienciasAPI';
+import experienciasAPI from '../../services/docentes/experienciasAPI';
 
 const ExperienciasPage = () => {
   const { user } = useAuth();

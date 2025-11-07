@@ -1,80 +1,68 @@
-// URL base de la API
-const API_BASE_URL = 'http://localhost:3000/api';
+import api from './api';
 
-// Función para obtener el token del localStorage
-const getAuthToken = () => {
-  return localStorage.getItem('token');
-};
-
-// Función para hacer peticiones HTTP con headers de autenticación
-const makeRequest = async (url, options = {}) => {
-  const token = getAuthToken();
-  
-  const defaultHeaders = {
-    'Content-Type': 'application/json',
-  };
-  
-  if (token) {
-    defaultHeaders.Authorization = `Bearer ${token}`;
-  }
-  
-  const requestOptions = {
-    ...options,
-    headers: {
-      ...defaultHeaders,
-      ...options.headers,
-    },
-  };
-  
-  try {
-    const response = await fetch(url, requestOptions);
-    const data = await response.json();
-    
-    if (!response.ok) {
-      throw new Error(data.message || `HTTP error! status: ${response.status}`);
-    }
-    
-    return data;
-  } catch (error) {
-    console.error('API Request Error:', error);
-    throw error;
-  }
-};
-
-// API para cursos
-export const cursosAPI = {
+const cursosAPI = {
   // Obtener todos los cursos con paginación
-  getCursos: async (page = 1, limit = 10, search = '') => {
-    const params = new URLSearchParams();
-    params.append('page', page.toString());
-    params.append('limit', limit.toString());
-    if (search) {
-      params.append('search', search);
+  async getCursos(page = 1, limit = 10, search = '') {
+    try {
+      const params = new URLSearchParams();
+      params.append('page', page.toString());
+      params.append('limit', limit.toString());
+      if (search) {
+        params.append('search', search);
+      }
+      
+      const response = await api.get(`/cursos?${params.toString()}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error al obtener cursos:', error);
+      throw {
+        message: error.response?.data?.message || 'Error al obtener los cursos',
+        status: error.response?.status || 500
+      };
     }
-    
-    const url = `${API_BASE_URL}/cursos?${params.toString()}`;
-    return makeRequest(url);
   },
 
   // Obtener estadísticas de cursos
-  getCursosStats: async () => {
-    const url = `${API_BASE_URL}/cursos/stats`;
-    return makeRequest(url);
+  async getCursosStats() {
+    try {
+      const response = await api.get('/cursos/stats');
+      return response.data;
+    } catch (error) {
+      console.error('Error al obtener estadísticas:', error);
+      throw {
+        message: error.response?.data?.message || 'Error al obtener las estadísticas',
+        status: error.response?.status || 500
+      };
+    }
   },
 
   // Obtener un curso por ID
-  getCursoById: async (id) => {
-    const url = `${API_BASE_URL}/cursos/${id}`;
-    return makeRequest(url);
+  async getCursoById(id) {
+    try {
+      const response = await api.get(`/cursos/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error al obtener curso:', error);
+      throw {
+        message: error.response?.data?.message || 'Error al obtener el curso',
+        status: error.response?.status || 500
+      };
+    }
   },
 
   // Cambiar estado de un curso (activar/desactivar)
-  toggleCursoStatus: async (id) => {
-    const url = `${API_BASE_URL}/cursos/${id}/status`;
-    return makeRequest(url, {
-      method: 'PATCH',
-    });
-  },
+  async toggleCursoStatus(id) {
+    try {
+      const response = await api.patch(`/cursos/${id}/status`);
+      return response.data;
+    } catch (error) {
+      console.error('Error al cambiar estado:', error);
+      throw {
+        message: error.response?.data?.message || 'Error al cambiar el estado del curso',
+        status: error.response?.status || 500
+      };
+    }
+  }
 };
 
 export default cursosAPI;

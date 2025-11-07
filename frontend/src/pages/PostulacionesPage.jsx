@@ -54,7 +54,7 @@ import {
 } from '@mui/icons-material';
 
 // Importar API
-import { postulacionesAPI } from '../services/postulacionesAPI';
+import postulacionesAPI from '../services/postulacionesAPI';
 
 const PostulacionesPage = () => {
   const [postulaciones, setPostulaciones] = useState([]);

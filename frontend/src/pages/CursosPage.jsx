@@ -21,7 +21,7 @@ import {
 import {
   Search as SearchIcon
 } from '@mui/icons-material';
-import { cursosAPI } from '../services/cursosAPI';
+import cursosAPI from '../services/cursosAPI';
 
 const CursosPage = () => {
   const [searchTerm, setSearchTerm] = useState('');

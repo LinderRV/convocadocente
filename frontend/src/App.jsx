@@ -23,7 +23,7 @@ import PerfilDocentePage from './pages/docentes/PerfilDocentePage';
 import FormacionesPage from './pages/docentes/FormacionesPage';
 import ExperienciasPage from './pages/docentes/ExperienciasPage';
 import CrearPostulacionPage from './pages/docentes/CrearPostulacionPage';
-import PostulacionesDocentePage from './pages/docentes/PostulacionesDocentePage';
+import PostulacionesDocentePage from './pages/docentes/ListaPostulacionesPage';
 
 // Pages Directores
 import DashboardDirector from './components/directores/DashboardDirector';

@@ -20,6 +20,7 @@ const formacionesRoutes = require('./src/routes/docentes/formacionesRoutes');
 const experienciasRoutes = require('./src/routes/docentes/experienciasRoutes');
 const docenteRoutes = require('./src/routes/docentes/docenteRoutes');
 const postulacionDocenteRoutes = require('./src/routes/docentes/postulacionDocenteRoutes');
+const listaPostulacionesRoutes = require('./src/routes/docentes/listaPostulacionesRoutes');
 
 // Importar middleware personalizado
 const errorHandler = require('./src/middleware/errorHandler');
@@ -65,6 +66,7 @@ app.use('/api/postulaciones', postulacionesRoutes);
 app.use('/api/docentes/formaciones', formacionesRoutes);
 app.use('/api/docentes/experiencias', experienciasRoutes);
 app.use('/api/docentes/postulaciones', postulacionDocenteRoutes);
+app.use('/api/docentes/lista-postulaciones', listaPostulacionesRoutes);
 app.use('/api/docentes', docenteRoutes);
 
 // Ruta de salud

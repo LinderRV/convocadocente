@@ -26,7 +26,7 @@ import {
   Schedule as ScheduleIcon
 } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
-import { cursosAPI } from '../../services/cursosAPI';
+import cursosAPI from '../../services/cursosAPI';
 
 const StatCard = ({ title, value, icon, color = 'primary', loading, subtitle }) => (
   <Card 
