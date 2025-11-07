@@ -241,19 +241,44 @@ export const formacionesAPI = {
       
       // Crear URL para descarga
       const url = window.URL.createObjectURL(blob);
-      
-      // Crear elemento de descarga temporal
       const link = document.createElement('a');
       link.href = url;
-      link.download = `documento_formacion_${id}.pdf`;
-      document.body.appendChild(link);
-      link.click();
       
-      // Limpiar
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      // Obtener nombre del archivo desde headers
+      const contentDisposition = response.headers.get('content-disposition');
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+        if (filenameMatch) {
+          link.setAttribute('download', filenameMatch[1]);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+          return { success: true, message: 'Documento descargado correctamente' };
+        }
+      }
       
-      return { success: true, message: 'Documento descargado correctamente' };
+      // Si no hay header, obtener el nombre del documento de la formación
+      const formacionResponse = await fetch(`${API_BASE_URL}/docentes/formaciones/${id}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      if (formacionResponse.ok) {
+        const formacionData = await formacionResponse.json();
+        const nombreArchivo = formacionData.data.documento_archivo;
+        
+        if (nombreArchivo) {
+          link.setAttribute('download', nombreArchivo);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+          return { success: true, message: 'Documento descargado correctamente' };
+        }
+      }
+      
+      throw new Error('No se pudo obtener el nombre del archivo');
+      
     } catch (error) {
       console.error('Error downloading document:', error);
       throw error;

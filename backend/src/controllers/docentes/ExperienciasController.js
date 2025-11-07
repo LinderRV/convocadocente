@@ -16,10 +16,8 @@ const storage = multer.diskStorage({
     }
   },
   filename: (req, file, cb) => {
-    const userId = req.user.id;
-    const fileExtension = path.extname(file.originalname);
-    const fileName = `experiencia_${userId}_${Date.now()}${fileExtension}`;
-    cb(null, fileName);
+    // Usar el nombre original del archivo
+    cb(null, file.originalname);
   }
 });
 
@@ -440,8 +438,8 @@ class ExperienciasController {
       res.setHeader('Content-Disposition', `attachment; filename="${experiencia.constancia_archivo}"`);
       res.setHeader('Content-Type', 'application/pdf');
 
-      // Enviar archivo
-      res.sendFile(archivoPath);
+      // Enviar archivo con res.download para nombre original
+      res.download(archivoPath, experiencia.constancia_archivo);
 
     } catch (error) {
       console.error('Error en downloadDocumento:', error);

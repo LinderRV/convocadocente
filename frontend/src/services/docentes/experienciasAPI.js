@@ -239,13 +239,36 @@ export const experienciasAPI = {
       // Obtener el blob del archivo
       const blob = await response.blob();
       
+      // Intentar obtener el nombre del archivo desde los headers
+      let filename = `constancia_experiencia_${id}.pdf`; // fallback
+      
+      const contentDisposition = response.headers.get('content-disposition');
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="([^"]+)"/);
+        if (filenameMatch) {
+          filename = filenameMatch[1];
+        }
+      }
+      
+      // Si no se pudo obtener del header, obtener desde la BD
+      if (filename === `constancia_experiencia_${id}.pdf`) {
+        try {
+          const experienciaData = await experienciasAPI.getExperienciaById(id);
+          if (experienciaData.success && experienciaData.data.constancia_archivo) {
+            filename = experienciaData.data.constancia_archivo;
+          }
+        } catch (error) {
+          console.warn('No se pudo obtener el nombre desde la BD:', error);
+        }
+      }
+      
       // Crear URL para descarga
       const url = window.URL.createObjectURL(blob);
       
       // Crear elemento de descarga temporal
       const link = document.createElement('a');
       link.href = url;
-      link.download = `constancia_experiencia_${id}.pdf`;
+      link.download = filename;
       document.body.appendChild(link);
       link.click();
       

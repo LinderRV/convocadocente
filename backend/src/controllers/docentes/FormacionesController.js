@@ -16,10 +16,9 @@ const storage = multer.diskStorage({
     }
   },
   filename: (req, file, cb) => {
-    const userId = req.user.id;
-    const fileExtension = path.extname(file.originalname);
-    const fileName = `formacion_${userId}_${Date.now()}${fileExtension}`;
-    cb(null, fileName);
+    // Mantener el nombre original del archivo
+    const originalName = file.originalname;
+    cb(null, originalName);
   }
 });
 
@@ -474,12 +473,16 @@ class FormacionesController {
         });
       }
 
-      // Configurar headers para descarga
-      res.setHeader('Content-Disposition', `attachment; filename="${formacion.documento_archivo}"`);
-      res.setHeader('Content-Type', 'application/pdf');
-
-      // Enviar archivo
-      res.sendFile(archivoPath);
+      // Enviar archivo con su nombre original
+      res.download(archivoPath, formacion.documento_archivo, (error) => {
+        if (error) {
+          console.error('Error en descarga:', error);
+          res.status(500).json({
+            success: false,
+            message: 'Error al descargar el archivo'
+          });
+        }
+      });
 
     } catch (error) {
       console.error('Error en downloadDocumento:', error);
