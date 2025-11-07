@@ -144,12 +144,11 @@ const PerfilDocentePage = () => {
   const handleFileSelect = (event) => {
     const file = event.target.files[0];
     if (file) {
-      // Validar tipo de archivo
-      const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-      if (!allowedTypes.includes(file.type)) {
+      // Validar que solo sea PDF
+      if (file.type !== 'application/pdf') {
         setAlert({
           type: 'error',
-          message: 'Solo se permiten archivos PDF, DOC y DOCX'
+          message: 'Solo se permiten archivos PDF'
         });
         return;
       }
@@ -514,7 +513,7 @@ const PerfilDocentePage = () => {
               Selecciona tu archivo CV
             </Typography>
             <Typography variant="body2" color="text.secondary" gutterBottom>
-              Formatos permitidos: PDF, DOC, DOCX (Máximo 5MB)
+              Solo se permiten archivos PDF (Máximo 5MB)
             </Typography>
             
             <Button
@@ -526,7 +525,7 @@ const PerfilDocentePage = () => {
               <input 
                 type="file" 
                 hidden 
-                accept=".pdf,.doc,.docx" 
+                accept=".pdf" 
                 onChange={handleFileSelect}
               />
             </Button>

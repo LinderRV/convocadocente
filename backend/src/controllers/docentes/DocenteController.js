@@ -16,21 +16,20 @@ const storage = multer.diskStorage({
     }
   },
   filename: (req, file, cb) => {
-    const userId = req.user.id;
-    const fileExtension = path.extname(file.originalname);
-    const fileName = `cv_${userId}_${Date.now()}${fileExtension}`;
-    cb(null, fileName);
+    // Mantener el nombre original del archivo
+    const originalName = file.originalname;
+    cb(null, originalName);
   }
 });
 
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = ['.pdf', '.doc', '.docx'];
   const fileExtension = path.extname(file.originalname).toLowerCase();
   
-  if (allowedTypes.includes(fileExtension)) {
+  // Solo permitir archivos PDF
+  if (fileExtension === '.pdf') {
     cb(null, true);
   } else {
-    cb(new Error('Solo se permiten archivos PDF, DOC y DOCX'), false);
+    cb(new Error('Solo se permiten archivos PDF'), false);
   }
 };
 
@@ -297,8 +296,8 @@ class DocenteController {
         });
       }
 
-      // Enviar archivo
-      res.download(archivoPath, `CV_${docente.nombres}_${docente.apellidos}.pdf`, (error) => {
+      // Enviar archivo con su nombre original
+      res.download(archivoPath, docente.cv_archivo, (error) => {
         if (error) {
           console.error('Error en descarga:', error);
           res.status(500).json({

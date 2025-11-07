@@ -48,6 +48,8 @@ const docenteAPI = {
         responseType: 'blob',
       });
       
+      console.log('Headers recibidos:', response.headers);
+      
       // Crear URL para descargar el archivo
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
@@ -55,21 +57,37 @@ const docenteAPI = {
       
       // Obtener nombre del archivo desde headers
       const contentDisposition = response.headers['content-disposition'];
-      let filename = 'CV.pdf';
+      console.log('Content-Disposition:', contentDisposition);
+      
       if (contentDisposition) {
         const filenameMatch = contentDisposition.match(/filename="(.+)"/);
         if (filenameMatch) {
-          filename = filenameMatch[1];
+          const filename = filenameMatch[1];
+          console.log('Nombre extraído:', filename);
+          link.setAttribute('download', filename);
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          window.URL.revokeObjectURL(url);
+          return { success: true, message: 'CV descargado correctamente' };
         }
       }
       
-      link.setAttribute('download', filename);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
+      // Si no hay header, obtener el nombre del perfil
+      const perfilResponse = await api.get('/docentes/perfil');
+      const nombreArchivo = perfilResponse.data.data.cv_archivo;
       
-      return { success: true, message: 'CV descargado correctamente' };
+      if (nombreArchivo) {
+        link.setAttribute('download', nombreArchivo);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+        return { success: true, message: 'CV descargado correctamente' };
+      }
+      
+      throw new Error('No se pudo obtener el nombre del archivo');
+      
     } catch (error) {
       console.error('Error al descargar CV:', error);
       throw error;
