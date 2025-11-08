@@ -76,8 +76,17 @@ const PerfilDocentePage = () => {
       const response = await docenteAPI.getPerfil();
       if (response.success) {
         const formattedData = {
-          ...response.data,
-          fecha_nacimiento: formatDateForInput(response.data.fecha_nacimiento)
+          id: response.data.id || null,
+          user_id: response.data.user_id || null,
+          nombres: response.data.nombres || "",
+          apellidos: response.data.apellidos || "",
+          dni: response.data.dni || "",
+          fecha_nacimiento: response.data.fecha_nacimiento || "",
+          genero: response.data.genero || "",
+          pais: response.data.pais || "Perú",
+          direccion: response.data.direccion || "",
+          telefono: response.data.telefono || "",
+          cv_archivo: response.data.cv_archivo || null
         };
         setPerfilData(formattedData);
         setTempData(formattedData);
@@ -119,8 +128,17 @@ const PerfilDocentePage = () => {
 
       if (response.success) {
         const formattedData = {
-          ...response.data,
-          fecha_nacimiento: formatDateForInput(response.data.fecha_nacimiento)
+          id: response.data.id || null,
+          user_id: response.data.user_id || null,
+          nombres: response.data.nombres || "",
+          apellidos: response.data.apellidos || "",
+          dni: response.data.dni || "",
+          fecha_nacimiento: response.data.fecha_nacimiento || "",
+          genero: response.data.genero || "",
+          pais: response.data.pais || "Perú",
+          direccion: response.data.direccion || "",
+          telefono: response.data.telefono || "",
+          cv_archivo: response.data.cv_archivo || null
         };
         setPerfilData(formattedData);
         setEditMode(false);
@@ -326,12 +344,14 @@ const PerfilDocentePage = () => {
               </Typography>
               
               <Box sx={{ textAlign: 'left', mt: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <BadgeIcon sx={{ mr: 1, color: 'text.secondary' }} />
-                  <Typography variant="body2">
-                    DNI: {perfilData.dni}
-                  </Typography>
-                </Box>
+                {perfilData.dni && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <BadgeIcon sx={{ mr: 1, color: 'text.secondary' }} />
+                    <Typography variant="body2">
+                      DNI: {perfilData.dni}
+                    </Typography>
+                  </Box>
+                )}
                 
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                   <EmailIcon sx={{ mr: 1, color: 'text.secondary' }} />
@@ -340,12 +360,14 @@ const PerfilDocentePage = () => {
                   </Typography>
                 </Box>
                 
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <PhoneIcon sx={{ mr: 1, color: 'text.secondary' }} />
-                  <Typography variant="body2">
-                    {perfilData.telefono}
-                  </Typography>
-                </Box>
+                {perfilData.telefono && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <PhoneIcon sx={{ mr: 1, color: 'text.secondary' }} />
+                    <Typography variant="body2">
+                      {perfilData.telefono}
+                    </Typography>
+                  </Box>
+                )}
               </Box>
 
               <Divider sx={{ my: 2 }} />
@@ -407,7 +429,7 @@ const PerfilDocentePage = () => {
                 <Grid item xs={12} sm={6}>
                   <TextField
                     label="Nombres"
-                    value={editMode ? tempData.nombres : perfilData.nombres}
+                    value={editMode ? (tempData.nombres || "") : (perfilData.nombres || "")}
                     onChange={(e) => setTempData({...tempData, nombres: e.target.value})}
                     disabled={!editMode}
                     fullWidth
@@ -418,7 +440,7 @@ const PerfilDocentePage = () => {
                 <Grid item xs={12} sm={6}>
                   <TextField
                     label="Apellidos"
-                    value={editMode ? tempData.apellidos : perfilData.apellidos}
+                    value={editMode ? (tempData.apellidos || "") : (perfilData.apellidos || "")}
                     onChange={(e) => setTempData({...tempData, apellidos: e.target.value})}
                     disabled={!editMode}
                     fullWidth
@@ -429,7 +451,7 @@ const PerfilDocentePage = () => {
                 <Grid item xs={12} sm={6}>
                   <TextField
                     label="DNI"
-                    value={editMode ? tempData.dni : perfilData.dni}
+                    value={editMode ? (tempData.dni || "") : (perfilData.dni || "")}
                     onChange={(e) => setTempData({...tempData, dni: e.target.value})}
                     disabled={!editMode}
                     fullWidth
@@ -441,7 +463,7 @@ const PerfilDocentePage = () => {
                   <TextField
                     type="date"
                     label="Fecha de Nacimiento"
-                    value={editMode ? formatDateForInput(tempData.fecha_nacimiento) : formatDateForInput(perfilData.fecha_nacimiento)}
+                    value={editMode ? formatDateForInput(tempData.fecha_nacimiento || "") : formatDateForInput(perfilData.fecha_nacimiento || "")}
                     onChange={(e) => setTempData({...tempData, fecha_nacimiento: e.target.value})}
                     disabled={!editMode}
                     fullWidth
@@ -453,7 +475,7 @@ const PerfilDocentePage = () => {
                   <TextField
                     select
                     label="Género"
-                    value={editMode ? tempData.genero : perfilData.genero}
+                    value={editMode ? (tempData.genero || "") : (perfilData.genero || "")}
                     onChange={(e) => setTempData({...tempData, genero: e.target.value})}
                     disabled={!editMode}
                     fullWidth
@@ -469,7 +491,7 @@ const PerfilDocentePage = () => {
                 <Grid item xs={12} sm={6}>
                   <TextField
                     label="País"
-                    value={editMode ? tempData.pais : perfilData.pais}
+                    value={editMode ? (tempData.pais || "Perú") : (perfilData.pais || "Perú")}
                     onChange={(e) => setTempData({...tempData, pais: e.target.value})}
                     disabled={!editMode}
                     fullWidth
@@ -479,7 +501,7 @@ const PerfilDocentePage = () => {
                 <Grid item xs={12} sm={6}>
                   <TextField
                     label="Teléfono"
-                    value={editMode ? tempData.telefono : perfilData.telefono}
+                    value={editMode ? (tempData.telefono || "") : (perfilData.telefono || "")}
                     onChange={(e) => setTempData({...tempData, telefono: e.target.value})}
                     disabled={!editMode}
                     fullWidth
@@ -489,7 +511,7 @@ const PerfilDocentePage = () => {
                 <Grid item xs={12}>
                   <TextField
                     label="Dirección"
-                    value={editMode ? tempData.direccion : perfilData.direccion}
+                    value={editMode ? (tempData.direccion || "") : (perfilData.direccion || "")}
                     onChange={(e) => setTempData({...tempData, direccion: e.target.value})}
                     disabled={!editMode}
                     fullWidth

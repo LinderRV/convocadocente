@@ -37,7 +37,7 @@ import {
   CheckCircle as CheckCircleIcon,
   Warning as WarningIcon
 } from '@mui/icons-material';
-import { testConnection } from '../../services/api';
+import { obtenerEstadisticasGenerales } from '../../services/dashboardAPI';
 import { useAuth } from '../../context/AuthContext';
 
 const StatCard = ({ title, value, icon, color = 'primary', trend, subtitle, loading }) => {
@@ -97,15 +97,6 @@ const StatCard = ({ title, value, icon, color = 'primary', trend, subtitle, load
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                   {subtitle}
                 </Typography>
-              )}
-              {trend && (
-                <Chip
-                  label={`${trend > 0 ? '+' : ''}${trend}%`}
-                  size="small"
-                  color={trend > 0 ? 'success' : 'error'}
-                  icon={<TrendingUpIcon />}
-                  sx={{ fontWeight: 600 }}
-                />
               )}
             </>
           )}
@@ -198,67 +189,98 @@ const ActivityItem = ({ title, description, time, type, avatar }) => {
 const Dashboard = () => {
   const { user } = useAuth();
   const theme = useTheme();
-  const [connectionStatus, setConnectionStatus] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [statsLoading, setStatsLoading] = useState(true);
+  const [dashboardStats, setDashboardStats] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    checkConnection();
-    // Simular carga de estadísticas
-    setTimeout(() => {
-      setStatsLoading(false);
-    }, 1500);
+    loadDashboardStats();
   }, []);
 
-  const checkConnection = async () => {
+  const loadDashboardStats = async () => {
     try {
-      setLoading(true);
-      const response = await testConnection();
-      setConnectionStatus({ success: true, message: response.message });
+      setStatsLoading(true);
+      setError(null);
+      
+      const response = await obtenerEstadisticasGenerales();
+      
+      if (response.success) {
+        setDashboardStats(response.data);
+      } else {
+        setError('Error al cargar datos');
+      }
     } catch (error) {
-      setConnectionStatus({
-        success: false,
-        message: error.response?.data?.message || 'Error de conexión con el servidor',
-      });
+      setError('Error de conexión');
     } finally {
-      setLoading(false);
+      setStatsLoading(false);
     }
   };
 
-  const stats = [
-    {
-      title: 'Total Docentes',
-      value: '247',
-      icon: <PeopleIcon />,
-      color: 'primary',
-      trend: 12,
-      subtitle: 'Docentes registrados'
-    },
-    {
-      title: 'Cursos Activos',
-      value: '18',
-      icon: <SchoolIcon />,
-      color: 'success',
-      trend: 25,
-      subtitle: 'Cursos disponibles'
-    },
-    {
-      title: 'Total Postulaciones',
-      value: '14',
-      icon: <AssignmentIcon />,
-      color: 'warning',
-      trend: 8,
-      subtitle: 'Total postulaciones'
-    },
-    {
-      title: 'Especialidades Registradas',
-      value: '98',
-      icon: <TrendingUpIcon />,
-      color: 'info',
-      trend: 5,
-      subtitle: 'Especialidades Registradas'
-    },
-  ];
+  // Generar estadísticas dinámicas desde los datos reales
+  const generateStats = () => {
+    if (!dashboardStats) return [];
+
+    return [
+      {
+        title: 'Total Docentes',
+        value: dashboardStats.totalDocentes || '0',
+        icon: <PeopleIcon />,
+        color: 'primary',
+        subtitle: 'Docentes registrados'
+      },
+      {
+        title: 'Cursos Activos',
+        value: dashboardStats.cursosActivos || '0',
+        icon: <SchoolIcon />,
+        color: 'success',
+        subtitle: 'Cursos disponibles'
+      },
+      {
+        title: 'Total Postulaciones',
+        value: dashboardStats.totalPostulaciones || '0',
+        icon: <AssignmentIcon />,
+        color: 'warning',
+        subtitle: 'Total postulaciones'
+      },
+      {
+        title: 'Especialidades',
+        value: dashboardStats.totalEspecialidades || '0',
+        icon: <TrendingUpIcon />,
+        color: 'info',
+        subtitle: 'Especialidades disponibles'
+      },
+      {
+        title: 'Postulaciones Pendientes',
+        value: dashboardStats.postulaciones?.pendientes || '0',
+        icon: <ScheduleIcon />,
+        color: 'warning',
+        subtitle: 'En espera de revisión'
+      },
+      {
+        title: 'En Evaluación',
+        value: dashboardStats.postulaciones?.evaluando || '0',
+        icon: <WorkIcon />,
+        color: 'info',
+        subtitle: 'Siendo evaluadas'
+      },
+      {
+        title: 'Postulaciones Aprobadas',
+        value: dashboardStats.postulaciones?.aprobadas || '0',
+        icon: <CheckCircleIcon />,
+        color: 'success',
+        subtitle: 'Postulaciones aceptadas'
+      },
+      {
+        title: 'Postulaciones Rechazadas',
+        value: dashboardStats.postulaciones?.rechazadas || '0',
+        icon: <WarningIcon />,
+        color: 'error',
+        subtitle: 'Postulaciones rechazadas'
+      }
+    ];
+  };
+
+  const stats = generateStats();
 
   return (
     <Box>
@@ -266,7 +288,7 @@ const Dashboard = () => {
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" component="h1" sx={{ 
           fontWeight: 'bold',
-          mb: 1,
+          mb: 2,
           background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
           backgroundClip: 'text',
           WebkitBackgroundClip: 'text',
@@ -274,6 +296,21 @@ const Dashboard = () => {
         }}>
           ¡Bienvenido de nuevo, {user?.nombre || 'Usuario'}! 👋
         </Typography>
+
+        {/* Mostrar errores si los hay */}
+        {error && (
+          <Alert 
+            severity="warning" 
+            sx={{ mb: 2 }}
+            action={
+              <Button color="inherit" size="small" onClick={loadDashboardStats}>
+                Reintentar
+              </Button>
+            }
+          >
+            {error}
+          </Alert>
+        )}
       </Box>
 
  
@@ -281,7 +318,7 @@ const Dashboard = () => {
       {/* Tarjetas de estadísticas */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {stats.map((stat, index) => (
-          <Grid item xs={12} sm={6} lg={3} key={index}>
+          <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
             <StatCard {...stat} loading={statsLoading} />
           </Grid>
         ))}

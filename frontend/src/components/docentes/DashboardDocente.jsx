@@ -1,26 +1,69 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Grid,
   Card,
   CardContent,
-  Typography
+  Typography,
+  CircularProgress,
+  Alert,
+  Backdrop
 } from '@mui/material';
 import {
   School as SchoolIcon,
   Work as WorkIcon,
   Send as SendIcon
 } from '@mui/icons-material';
+import dashboardAPI from '../../services/dashboardAPI';
 
 const DashboardDocente = () => {
-  const estadisticas = {
-    formaciones: { total: 3, doctorados: 1, maestrias: 1 },
-    experiencias: { total: 5, actual: 1, anios: 12 },
-    postulaciones: { total: 2, aprobadas: 1, pendientes: 1 }
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [estadisticas, setEstadisticas] = useState({
+    formaciones: { total: 0 },
+    experiencias: { total: 0 },
+    postulaciones: { total: 0 }
+  });
+
+  useEffect(() => {
+    cargarDatos();
+  }, []);
+
+  const cargarDatos = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const estadisticasResponse = await dashboardAPI.obtenerEstadisticas();
+      
+      if (estadisticasResponse.success) {
+        setEstadisticas(estadisticasResponse.data);
+      }
+      
+    } catch (error) {
+      console.error('Error al cargar datos del dashboard:', error);
+      setError('Error al cargar los datos del dashboard');
+    } finally {
+      setLoading(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <Backdrop sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }} open={loading}>
+        <CircularProgress color="inherit" />
+      </Backdrop>
+    );
+  }
 
   return (
     <Box sx={{ p: 3 }}>
+      {error && (
+        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      )}
+
       {/* Tarjetas de Estadísticas */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} sm={6} md={4}>
@@ -30,7 +73,7 @@ const DashboardDocente = () => {
               <Typography variant="h4" component="div">
                 {estadisticas.formaciones.total}
               </Typography>
-              <Typography color="text.secondary">
+              <Typography color="text.secondary" gutterBottom>
                 Formaciones Académicas
               </Typography>
             </CardContent>
@@ -44,7 +87,7 @@ const DashboardDocente = () => {
               <Typography variant="h4" component="div">
                 {estadisticas.experiencias.total}
               </Typography>
-              <Typography color="text.secondary">
+              <Typography color="text.secondary" gutterBottom>
                 Experiencias Laborales
               </Typography>
             </CardContent>
@@ -58,7 +101,7 @@ const DashboardDocente = () => {
               <Typography variant="h4" component="div">
                 {estadisticas.postulaciones.total}
               </Typography>
-              <Typography color="text.secondary">
+              <Typography color="text.secondary" gutterBottom>
                 Postulaciones
               </Typography>
             </CardContent>

@@ -21,6 +21,13 @@ const experienciasRoutes = require('./src/routes/docentes/experienciasRoutes');
 const docenteRoutes = require('./src/routes/docentes/docenteRoutes');
 const postulacionDocenteRoutes = require('./src/routes/docentes/postulacionDocenteRoutes');
 const listaPostulacionesRoutes = require('./src/routes/docentes/listaPostulacionesRoutes');
+const dashboardRoutes = require('./src/routes/docentes/dashboardRoutes');
+
+// Importar rutas de directores
+const dashboardDirectorRoutes = require('./src/routes/directores/dashboardDirectorRoutes');
+
+// Importar rutas generales
+const dashboardGeneralRoutes = require('./src/routes/dashboardRoutes');
 
 // Importar middleware personalizado
 const errorHandler = require('./src/middleware/errorHandler');
@@ -67,7 +74,14 @@ app.use('/api/docentes/formaciones', formacionesRoutes);
 app.use('/api/docentes/experiencias', experienciasRoutes);
 app.use('/api/docentes/postulaciones', postulacionDocenteRoutes);
 app.use('/api/docentes/lista-postulaciones', listaPostulacionesRoutes);
+app.use('/api/docentes/dashboard', dashboardRoutes);
 app.use('/api/docentes', docenteRoutes);
+
+// Rutas de directores
+app.use('/api/directores/dashboard', dashboardDirectorRoutes);
+
+// Rutas generales (Dashboard para Admin/Decano)
+app.use('/api/dashboard', dashboardGeneralRoutes);
 
 // Ruta de salud
 app.get('/api/health', (req, res) => {

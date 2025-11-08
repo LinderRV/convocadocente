@@ -26,7 +26,7 @@ import {
   Schedule as ScheduleIcon
 } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
-import cursosAPI from '../../services/cursosAPI';
+import dashboardDirectorAPI from '../../services/directores/dashboardDirectorAPI';
 
 const StatCard = ({ title, value, icon, color = 'primary', loading, subtitle }) => (
   <Card 
@@ -80,11 +80,12 @@ const StatCard = ({ title, value, icon, color = 'primary', loading, subtitle }) 
 const DashboardDirector = () => {
   const { user } = useAuth();
   const [stats, setStats] = useState({
-    totalCursos: 0,
     cursosActivos: 0,
-    cursosInactivos: 0,
-    totalPostulaciones: 0
+    totalPostulaciones: 0,
+    postulacionesPendientes: 0,
+    postulacionesAprobadas: 0
   });
+  const [especialidadInfo, setEspecialidadInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -94,19 +95,24 @@ const DashboardDirector = () => {
       setLoading(true);
       setError(null);
       
-      // Aquí podríamos cargar estadísticas específicas del director
-      // Por ahora usamos datos mock
-      const mockStats = {
-        totalCursos: 12,
-        cursosActivos: 8,
-        cursosInactivos: 4,
-        totalPostulaciones: 15
-      };
+      // Cargar estadísticas reales del dashboard
+      const statsResponse = await dashboardDirectorAPI.getDashboardStats();
       
-      setStats(mockStats);
+      if (statsResponse.success) {
+        setStats(statsResponse.data);
+        // Usar la información de especialidad que viene en las estadísticas
+        if (statsResponse.data.especialidad) {
+          setEspecialidadInfo({
+            especialidad: {
+              nombre: statsResponse.data.especialidad.nombre_especialidad
+            }
+          });
+        }
+      }
+      
     } catch (error) {
       console.error('Error al cargar estadísticas:', error);
-      setError('Error al cargar las estadísticas');
+      setError(error.message || 'Error al cargar las estadísticas');
     } finally {
       setLoading(false);
     }
@@ -116,33 +122,13 @@ const DashboardDirector = () => {
     loadStats();
   }, []);
 
-  // Obtener el nombre de la especialidad del director
-  const getEspecialidadDirector = () => {
-    // Esto debería venir del contexto de usuario con la especialidad asignada
-    return 'Enfermería'; // Valor por defecto
-  };
-
   const cardStats = [
-    {
-      title: 'Cursos Totales',
-      value: stats.totalCursos,
-      icon: <SchoolIcon />,
-      color: 'primary',
-      subtitle: 'En mi especialidad'
-    },
     {
       title: 'Cursos Activos',
       value: stats.cursosActivos,
-      icon: <CheckCircleIcon />,
+      icon: <SchoolIcon />,
       color: 'success',
       subtitle: 'Disponibles para postulación'
-    },
-    {
-      title: 'Cursos Inactivos',
-      value: stats.cursosInactivos,
-      icon: <CancelIcon />,
-      color: 'warning',
-      subtitle: 'No disponibles'
     },
     {
       title: 'Postulaciones',
@@ -150,24 +136,20 @@ const DashboardDirector = () => {
       icon: <PeopleIcon />,
       color: 'info',
       subtitle: 'Docentes postulados'
-    }
-  ];
-
-  const recentActivities = [
-    {
-      text: 'Nuevo docente postulado a Anatomía I',
-      time: 'Hace 2 horas',
-      type: 'postulacion'
     },
     {
-      text: 'Curso "Fisiología" activado',
-      time: 'Ayer',
-      type: 'curso'
+      title: 'Pendientes de evaluación',
+      value: stats.postulacionesPendientes,
+      icon: <ScheduleIcon />,
+      color: 'warning',
+      subtitle: 'En espera de revisión'
     },
     {
-      text: 'Evaluación pendiente para 3 postulaciones',
-      time: 'Hace 1 día',
-      type: 'evaluacion'
+      title: 'Aprobadas',
+      value: stats.postulacionesAprobadas,
+      icon: <CheckCircleIcon />,
+      color: 'primary',
+      subtitle: 'Postulaciones aceptadas'
     }
   ];
 
@@ -189,7 +171,10 @@ const DashboardDirector = () => {
           ¡Bienvenido, Director!
         </Typography>
         <Typography variant="h6" color="text.secondary">
-          Panel de gestión - Especialidad de {getEspecialidadDirector()}
+          {especialidadInfo ? 
+            `Panel de gestión - Especialidad de ${especialidadInfo.especialidad.nombre}` :
+            'Panel de gestión de especialidad'
+          }
         </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
           Gestiona los cursos de tu especialidad y supervisa las postulaciones docentes
@@ -211,138 +196,6 @@ const DashboardDirector = () => {
           </Grid>
         ))}
       </Grid>
-
-      {/* Sección Principal */}
-      <Grid container spacing={3}>
-        {/* Panel de Acceso Rápido */}
-        <Grid item xs={12} md={8}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3 }}>
-                Gestión de Cursos
-              </Typography>
-              
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
-                  <Paper
-                    sx={{
-                      p: 3,
-                      textAlign: 'center',
-                      bgcolor: 'primary.main',
-                      color: 'white',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s ease',
-                      '&:hover': {
-                        bgcolor: 'primary.dark',
-                        transform: 'translateY(-2px)'
-                      }
-                    }}
-                    onClick={() => window.location.href = '/cursos'}
-                  >
-                    <SchoolIcon sx={{ fontSize: 48, mb: 2 }} />
-                    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
-                      Administrar Cursos
-                    </Typography>
-                    <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                      Gestiona el estado de los cursos de tu especialidad
-                    </Typography>
-                  </Paper>
-                </Grid>
-
-                <Grid item xs={12} sm={6}>
-                  <Paper
-                    sx={{
-                      p: 3,
-                      textAlign: 'center',
-                      bgcolor: 'success.main',
-                      color: 'white',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s ease',
-                      '&:hover': {
-                        bgcolor: 'success.dark',
-                        transform: 'translateY(-2px)'
-                      }
-                    }}
-                  >
-                    <AssessmentIcon sx={{ fontSize: 48, mb: 2 }} />
-                    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
-                      Evaluar Postulaciones
-                    </Typography>
-                    <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                      Revisa y evalúa las postulaciones de docentes
-                    </Typography>
-                  </Paper>
-                </Grid>
-              </Grid>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Panel de Actividad Reciente */}
-        <Grid item xs={12} md={4}>
-          <Card sx={{ height: 'fit-content' }}>
-            <CardContent>
-              <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
-                Actividad Reciente
-              </Typography>
-              
-              <List disablePadding>
-                {recentActivities.map((activity, index) => (
-                  <Box key={index}>
-                    <ListItem sx={{ px: 0, py: 1 }}>
-                      <ListItemIcon sx={{ minWidth: 36 }}>
-                        <Avatar sx={{ 
-                          width: 32, 
-                          height: 32, 
-                          bgcolor: activity.type === 'postulacion' ? 'info.main' : 
-                                   activity.type === 'curso' ? 'success.main' : 'warning.main'
-                        }}>
-                          {activity.type === 'postulacion' ? <PeopleIcon sx={{ fontSize: 16 }} /> :
-                           activity.type === 'curso' ? <SchoolIcon sx={{ fontSize: 16 }} /> :
-                           <ScheduleIcon sx={{ fontSize: 16 }} />}
-                        </Avatar>
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={
-                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {activity.text}
-                          </Typography>
-                        }
-                        secondary={
-                          <Typography variant="caption" color="text.secondary">
-                            {activity.time}
-                          </Typography>
-                        }
-                      />
-                    </ListItem>
-                    {index < recentActivities.length - 1 && <Divider />}
-                  </Box>
-                ))}
-              </List>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-
-      {/* Información de Especialidad */}
-      <Card sx={{ mt: 3 }}>
-        <CardContent>
-          <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
-            Tu Especialidad
-          </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Chip 
-              label={`Especialidad: ${getEspecialidadDirector()}`}
-              color="primary"
-              variant="outlined"
-              sx={{ fontWeight: 'bold' }}
-            />
-            <Typography variant="body2" color="text.secondary">
-              Como Director de esta especialidad, puedes gestionar todos los cursos asignados y evaluar las postulaciones de docentes.
-            </Typography>
-          </Box>
-        </CardContent>
-      </Card>
     </Box>
   );
 };

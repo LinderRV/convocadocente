@@ -56,7 +56,7 @@ class DocenteController {
           user_id: userId,
           nombres: req.user.nombre || '',
           apellidos: '',
-          dni: '',
+          dni: null,
           fecha_nacimiento: null,
           genero: '',
           pais: 'Perú',
@@ -107,8 +107,8 @@ class DocenteController {
       }
 
       // Validar DNI único si se proporciona
-      if (dni) {
-        const existeDNI = await Docente.findByDNI(dni, userId);
+      if (dni && dni.trim()) {
+        const existeDNI = await Docente.findByDNI(dni.trim(), userId);
         if (existeDNI) {
           return res.status(400).json({
             success: false,
@@ -120,7 +120,7 @@ class DocenteController {
       const docenteData = {
         nombres: nombres.trim(),
         apellidos: apellidos.trim(),
-        dni: dni ? dni.trim() : '',
+        dni: dni && dni.trim() ? dni.trim() : null,
         fecha_nacimiento,
         genero,
         pais,
