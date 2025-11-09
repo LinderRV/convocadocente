@@ -360,17 +360,18 @@ const CrearPostulacionPage = () => {
     } catch (error) {
       console.error('Error al crear postulación:', error);
       
+      // Obtener el mensaje de error del backend
+      const errorMessage = error.message || 'Error al crear la postulación. Por favor intente nuevamente.';
+      
       // Verificar si es error de postulación duplicada
-      const errorMessage = error.message || '';
       const esPostulacionDuplicada = errorMessage.includes('postulación activa') || 
-                                     errorMessage.includes('Ya tienes una postulación') ||
-                                     errorMessage.includes('400');
+                                     errorMessage.includes('Ya tienes una postulación');
       
       setAlert({ 
         type: esPostulacionDuplicada ? 'warning' : 'error',
         message: esPostulacionDuplicada ? 
           '⚠️ Ya te has postulado a esta especialidad. Solo puedes tener una postulación activa por especialidad.' :
-          'Error al crear la postulación. Por favor intente nuevamente.'
+          errorMessage
       });
     } finally {
       setLoading(false);

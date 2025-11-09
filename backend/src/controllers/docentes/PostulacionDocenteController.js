@@ -158,6 +158,54 @@ class PostulacionDocenteController {
         });
       }
 
+      // VALIDACIÓN DE PERFIL COMPLETO OBLIGATORIO
+      // 1. Verificar información personal y CV en tabla docentes
+      const [docenteInfo] = await connection.execute(
+        `SELECT nombres, apellidos, dni, cv_archivo FROM docentes WHERE user_id = ?`,
+        [userId]
+      );
+
+      if (!docenteInfo.length) {
+        return res.status(400).json({
+          success: false,
+          message: 'Debe completar su información personal antes de postular'
+        });
+      }
+
+      const docente = docenteInfo[0];
+      if (!docente.nombres || !docente.apellidos || !docente.dni || !docente.cv_archivo) {
+        return res.status(400).json({
+          success: false,
+          message: 'Debe completar su información personal y cargar su CV antes de postular'
+        });
+      }
+
+      // 2. Verificar al menos 1 formación académica
+      const [formaciones] = await connection.execute(
+        `SELECT COUNT(*) as total FROM formaciones_academicas WHERE user_id = ?`,
+        [userId]
+      );
+
+      if (formaciones[0].total === 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Debe registrar al menos una formación académica antes de postular'
+        });
+      }
+
+      // 3. Verificar al menos 1 experiencia laboral (o marcado como "sin experiencia")
+      const [experiencias] = await connection.execute(
+        `SELECT COUNT(*) as total FROM experiencias_laborales WHERE user_id = ?`,
+        [userId]
+      );
+
+      if (experiencias[0].total === 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Debe registrar al menos una experiencia laboral (o marcar "sin experiencia") antes de postular'
+        });
+      }
+
       // Verificar que no existe una postulación activa para esta especialidad
       const [existingPostulacion] = await connection.execute(
         `SELECT id FROM postulaciones_cursos_especialidad 

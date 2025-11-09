@@ -1,8 +1,8 @@
 
+
 -- Base de datos: `bd_convocadocente`
 
 -- Estructura de tabla para la tabla `docentes`
---
 
 CREATE TABLE `docentes` (
   `id` int NOT NULL,
@@ -23,8 +23,8 @@ CREATE TABLE `docentes` (
 --
 
 INSERT INTO `docentes` (`id`, `user_id`, `nombres`, `apellidos`, `dni`, `fecha_nacimiento`, `genero`, `pais`, `direccion`, `telefono`, `cv_archivo`) VALUES
-(1, 11, 'drmedicina', 'ROJAS PEREZ', '7563221', '1999-12-20', 'Masculino', 'Japón', 'av el muro o este', '912234934', 'cv_11_1762279121199.docx'),
-(2, 10, 'James Pérez lima', '', '', NULL, '', 'Perú', '', '', NULL);
+(1, 11, 'Pedro Luis', 'Sánchez Rojas', '78451620', '1992-10-20', 'Masculino', 'Bolivia', 'calle 12 av las Gaviotas', '978562341', 'juan curriculm.pdf'),
+(2, 15, 'Clendi poma', '', NULL, NULL, '', 'Perú', '', '', NULL);
 
 
 -- Estructura de tabla para la tabla `docente_cursos_interes`
@@ -43,10 +43,8 @@ CREATE TABLE `docente_cursos_interes` (
 --
 
 INSERT INTO `docente_cursos_interes` (`id`, `user_id`, `plan_estudio_curso_id`, `fecha_registro`, `postulacion_id`) VALUES
-(1, 11, 3, '2025-11-06 00:35:35', 1),
-(2, 11, 1, '2025-11-06 00:35:35', 1),
-(3, 11, 4, '2025-11-06 00:36:42', 2),
-(4, 11, 5, '2025-11-06 00:36:42', 2);
+(1, 11, 3, '2025-11-08 22:53:38', 1),
+(2, 11, 1, '2025-11-08 22:53:38', 1);
 
 
 -- Estructura de tabla para la tabla `docente_horarios`
@@ -66,11 +64,8 @@ CREATE TABLE `docente_horarios` (
 --
 
 INSERT INTO `docente_horarios` (`id`, `user_id`, `dia_semana`, `hora_inicio`, `hora_fin`, `postulacion_id`) VALUES
-(1, 11, 'Lunes', '10:00:00', '20:00:00', 1),
-(2, 11, 'Miércoles', '13:00:00', '21:30:00', 1),
-(3, 11, 'Jueves', '14:00:00', '21:40:00', 2),
-(4, 11, 'Sábado', '09:20:00', '23:00:00', 2);
-
+(1, 11, 'Lunes', '08:20:00', '20:00:00', 1),
+(2, 11, 'Miércoles', '13:30:00', '22:40:00', 1);
 
 -- Estructura de tabla para la tabla `especialidades`
 --
@@ -88,6 +83,7 @@ CREATE TABLE `especialidades` (
 INSERT INTO `especialidades` (`c_codfac`, `c_codesp`, `nomesp`) VALUES
 ('S', 'S1', 'ENFERMERÍA'),
 ('S', 'S2', 'FARMACIA Y BIOQUÍMICA');
+
 
 -- Estructura de tabla para la tabla `experiencias_laborales`
 --
@@ -112,13 +108,10 @@ CREATE TABLE `experiencias_laborales` (
 --
 
 INSERT INTO `experiencias_laborales` (`id`, `user_id`, `pais`, `sector`, `empresa`, `ruc`, `cargo`, `fecha_inicio`, `fecha_fin`, `actual`, `sin_experiencia`, `constancia_archivo`) VALUES
-(1, 11, 'OLANDA', 'Privado', 'GLORIA', '12020123456', 'CAJERO', '2023-12-10', '2024-10-20', 0, 0, 'experiencia_11_1762295549229.pdf'),
-(2, 11, 'Argentina', 'Privado', 'Renic', '12345678965', 'Contador', '1999-02-10', '2001-02-20', 0, 0, 'experiencia_11_1762293790690.pdf'),
-(3, 11, 'Chile', 'Público', 'Universidad del Sur', '78945632152', 'Docente', '2025-02-20', NULL, 1, 0, 'experiencia_11_1762295587049.pdf');
+(1, 11, 'Ecuador', 'Público', 'Colegio Jesus ', NULL, 'Orientación Vocacional', '2021-02-20', '2021-05-30', 0, 0, NULL),
+(2, 11, 'Peru', 'Público', 'Hospital Divino', '22000000000', 'Abogado permanente', '2023-09-23', '2023-11-08', 0, 0, 'mi contancia.pdf'),
+(3, 11, 'Peru', 'Privado', 'Universidad Cesar Vallejo', NULL, 'Docente', '2024-10-25', NULL, 1, 0, NULL);
 
--- --------------------------------------------------------
-
---
 -- Estructura de tabla para la tabla `facultades`
 --
 
@@ -133,7 +126,6 @@ CREATE TABLE `facultades` (
 
 INSERT INTO `facultades` (`c_codfac`, `nom_fac`) VALUES
 ('S', 'CIENCIAS DE LA SALUD');
-
 
 -- Estructura de tabla para la tabla `formaciones_academicas`
 --
@@ -154,10 +146,9 @@ CREATE TABLE `formaciones_academicas` (
 --
 
 INSERT INTO `formaciones_academicas` (`id`, `user_id`, `nivel_formacion`, `programa_academico`, `institucion`, `pais`, `fecha_obtencion`, `documento_archivo`) VALUES
-(1, 11, 'Maestría', 'SALUD PUBLICA', 'USENS', 'ESPAÑA', '2000-10-20', 'formacion_11_1762289915788.pdf'),
-(2, 11, 'Licenciatura', 'ENFERMERIA', 'NOTBERT WINNER', 'PERU', '2024-01-20', 'formacion_11_1762289907765.pdf'),
-(3, 11, 'Post-Doctorado', 'EN QUIROFANO', 'UNGENS', 'CHILE', '2024-02-20', 'formacion_11_1762290039781.pdf');
-
+(1, 11, 'Técnico Superior', 'Contabilidad', 'SISE', 'Peru', '2020-02-20', 'titulo tecnico .pdf'),
+(2, 11, 'Licenciatura', 'Derecho', 'Nortbert Winnner', 'Chile', '2023-08-15', 'pedro derecho.pdf'),
+(3, 11, 'Maestría', 'salud publica', 'Adversidad del Norte', 'Espeña', '2024-12-19', 'mi maestria.pdf');
 
 -- Estructura de tabla para la tabla `plan_estudio_curso`
 --
@@ -203,9 +194,7 @@ CREATE TABLE `postulaciones_cursos_especialidad` (
 --
 
 INSERT INTO `postulaciones_cursos_especialidad` (`id`, `user_id`, `c_codfac`, `c_codesp`, `estado`, `comentario_evaluacion`, `evaluador_user_id`, `fecha_postulacion`) VALUES
-(1, 11, 'S', 'S1', 'PENDIENTE', NULL, 10, '2025-11-06 00:35:35'),
-(2, 11, 'S', 'S2', 'PENDIENTE', NULL, 12, '2025-11-06 00:36:42');
-
+(1, 11, 'S', 'S1', 'PENDIENTE', NULL, 10, '2025-11-08 22:53:38');
 
 -- Estructura de tabla para la tabla `roles`
 --
@@ -225,7 +214,6 @@ INSERT INTO `roles` (`id`, `nombre`, `descripcion`, `estado`) VALUES
 (1, 'Administrador', NULL, 1),
 (2, 'Decano', NULL, 1),
 (3, 'Director', NULL, 1);
-
 
 -- Estructura de tabla para la tabla `usuarios`
 --
@@ -250,11 +238,11 @@ CREATE TABLE `usuarios` (
 --
 
 INSERT INTO `usuarios` (`id`, `nombre`, `email`, `google_id`, `email_verified_at`, `password`, `remember_token`, `first_login`, `created_at`, `updated_at`, `last_login`, `estado`) VALUES
-(1, 'REVILLA', 'linder.revilla@uma.edu.pe', NULL, NULL, '$2a$12$RK2j2vNhN4zvRip3HpX6yOl4N1SW9mMxjCBTVPcOxIfSxTSzNxjHe', NULL, 1, '2025-11-03 21:03:45', '2025-11-06 00:32:12', '2025-11-06 00:32:12', 1),
-(10, 'James Pérez lima', 'james.perezlima@gmail.com', NULL, NULL, NULL, NULL, 1, '2025-11-03 22:11:22', '2025-11-05 22:49:13', '2025-11-05 22:49:13', 1),
-(11, 'Pedro', 'pedro.rojas@uma.edu.pe', NULL, NULL, '$2a$12$xgF3ypsrC4OFa5oa7jIgi.VE36Ru23pV2mouMUNuaIEFBEHqoP7vG', NULL, 1, '2025-11-04 03:21:34', '2025-11-06 00:34:52', '2025-11-06 00:34:52', 1),
-(12, 'JUAN TOBAR', 'juan.tovar@uma.edu.pe', NULL, NULL, '$2a$12$xgF3ypsrC4OFa5oa7jIgi.VE36Ru23pV2mouMUNuaIEFBEHqoP7vG', NULL, 1, '2025-11-06 00:23:02', '2025-11-06 00:29:37', '2025-11-06 00:29:37', 1);
-
+(1, 'REVILLA', 'linder.revilla@uma.edu.pe', NULL, NULL, '$2a$12$RK2j2vNhN4zvRip3HpX6yOl4N1SW9mMxjCBTVPcOxIfSxTSzNxjHe', NULL, 1, '2025-11-03 21:03:45', '2025-11-08 19:41:44', '2025-11-08 19:41:44', 1),
+(10, 'James Pérez lima', 'james.perezlima@gmail.com', NULL, NULL, NULL, NULL, 1, '2025-11-03 22:11:22', '2025-11-08 00:07:53', '2025-11-08 00:07:53', 1),
+(11, 'Pedro', 'pedro.rojas@uma.edu.pe', NULL, NULL, '$2a$12$xgF3ypsrC4OFa5oa7jIgi.VE36Ru23pV2mouMUNuaIEFBEHqoP7vG', NULL, 1, '2025-11-04 03:21:34', '2025-11-08 22:29:02', '2025-11-08 22:29:02', 1),
+(12, 'JUAN TOBAR', 'juan.tovar@uma.edu.pe', NULL, NULL, '$2a$12$xgF3ypsrC4OFa5oa7jIgi.VE36Ru23pV2mouMUNuaIEFBEHqoP7vG', NULL, 1, '2025-11-06 00:23:02', '2025-11-08 00:03:18', '2025-11-08 00:03:18', 1),
+(15, 'Clendi poma', 'clendipoma@gmail.com', NULL, NULL, '$2a$12$Vuz5i5gA7qWgO2glIIdsG.gkXvVlenqstlDZM9QP5C.mDTG8K0Ks6', NULL, 1, '2025-11-08 22:56:42', '2025-11-08 22:57:11', '2025-11-08 22:57:11', 1);
 
 -- Estructura de tabla para la tabla `usuario_especialidad`
 --
@@ -422,19 +410,19 @@ ALTER TABLE `usuario_roles`
 -- AUTO_INCREMENT de la tabla `docentes`
 --
 ALTER TABLE `docentes`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `docente_cursos_interes`
 --
 ALTER TABLE `docente_cursos_interes`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `docente_horarios`
 --
 ALTER TABLE `docente_horarios`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `experiencias_laborales`
@@ -458,7 +446,7 @@ ALTER TABLE `plan_estudio_curso`
 -- AUTO_INCREMENT de la tabla `postulaciones_cursos_especialidad`
 --
 ALTER TABLE `postulaciones_cursos_especialidad`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `roles`
@@ -470,7 +458,7 @@ ALTER TABLE `roles`
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- Restricciones para tablas volcadas
@@ -550,3 +538,4 @@ ALTER TABLE `usuario_roles`
   ADD CONSTRAINT `usuario_roles_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `usuario_roles_ibfk_2` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`) ON DELETE RESTRICT;
 COMMIT;
+
