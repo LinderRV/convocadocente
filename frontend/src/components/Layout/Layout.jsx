@@ -204,7 +204,7 @@ const Layout = () => {
       <Box
         sx={{
           p: 3,
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          background: 'linear-gradient(135deg, #e50a5e 0%, #64082b 100%)',
           color: 'white',
           display: 'flex',
           alignItems: 'center',

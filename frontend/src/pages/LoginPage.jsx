@@ -216,7 +216,7 @@ const LoginPage = () => {
                       required
                       fullWidth
                       id="nombre"
-                      label="Nombre Completo"
+                      label="Nombre"
                       name="nombre"
                       autoComplete="name"
                       value={registerData.nombre}
