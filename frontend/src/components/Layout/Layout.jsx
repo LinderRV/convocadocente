@@ -66,13 +66,13 @@ const Layout = () => {
   const isDirector = user?.roles?.includes('Director');
 
   // Debug: Log para verificar roles
-  console.log('🔍 Usuario actual:', user);
-  console.log('👤 Roles del usuario:', user?.roles);
-  console.log('📝 Es Docente:', isDocente);
-  console.log('⚡ Es Administrativo:', isAdministrativo);
-  console.log('👑 Es Administrador:', isAdministrador);
-  console.log('🏛️ Es Decano:', isDecano);
-  console.log('🎯 Es Director:', isDirector);
+  // console.log('🔍 Usuario actual:', user);
+  // console.log('👤 Roles del usuario:', user?.roles);
+  // console.log('📝 Es Docente:', isDocente);
+  // console.log('⚡ Es Administrativo:', isAdministrativo);
+  // console.log('👑 Es Administrador:', isAdministrador);
+  // console.log('🏛️ Es Decano:', isDecano);
+  // console.log('🎯 Es Director:', isDirector);
 
   // Elementos del menú lateral para ADMINISTRADOR y DECANO
   const menuItemsAdminGeneral = [

@@ -72,12 +72,6 @@ const FormacionesPage = () => {
 
   // Cargar formaciones al montar el componente
   useEffect(() => {
-    // Debug: Verificar estado de autenticación
-    console.log('User from context:', user);
-    console.log('isAuthenticated:', isAuthenticated);
-    console.log('authLoading:', authLoading);
-    console.log('Token in localStorage:', localStorage.getItem('token'));
-    
     if (!authLoading && isAuthenticated && user) {
       loadFormaciones();
     } else if (!authLoading && !isAuthenticated) {
@@ -109,8 +103,6 @@ const FormacionesPage = () => {
         setTotalPages(response.pagination?.totalPages || 1);
       }
     } catch (error) {
-      console.error('Error loading formaciones:', error);
-      
       // Manejo específico de errores de autenticación
       if (error.message?.includes('Token') || error.message?.includes('Unauthorized')) {
         setAlert({

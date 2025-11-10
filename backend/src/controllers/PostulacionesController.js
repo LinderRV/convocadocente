@@ -11,10 +11,6 @@ class PostulacionesController {
       const limitNum = Math.max(1, Math.min(100, parseInt(limit) || 5));
       const offset = (pageNum - 1) * limitNum;
 
-      console.log('🔍 Iniciando consulta de postulaciones...');
-      console.log('📝 Parámetros validados:', { pageNum, limitNum, offset });
-      console.log('📝 Usuario logueado:', req.user.id, req.user.rol);
-
       // Determinar filtro según rol del usuario
       let whereClause = 'WHERE u.estado = 1';
       let joinClause = '';
@@ -28,7 +24,6 @@ class PostulacionesController {
             ue.user_id = ?
         `;
         whereClause = 'WHERE u.estado = 1';
-        console.log('👨‍💼 Director detectado - Filtrando por especialidad del usuario:', req.user.id);
       }
 
       // Query principal con JOIN completo para obtener datos reales
@@ -85,8 +80,6 @@ class PostulacionesController {
         ${whereClause}
       `;
 
-      console.log('🔍 Ejecutando query principal con datos completos...');
-      
       // Ejecutar queries con parámetros según el rol
       let allResults, countResults;
       
@@ -96,19 +89,16 @@ class PostulacionesController {
         const [count] = await pool.execute(countQuery, [req.user.id]);
         allResults = results;
         countResults = count;
-        console.log('✅ Query para Director ejecutada, postulaciones de su especialidad:', allResults.length);
       } else {
         // Para Administrador/Decano: ver todas las postulaciones
         const [results] = await pool.execute(mainQuery);
         const [count] = await pool.execute(countQuery);
         allResults = results;
         countResults = count;
-        console.log('✅ Query para Admin/Decano ejecutada, todas las postulaciones:', allResults.length);
       }
       
       // Aplicar paginación manualmente
       const postulaciones = allResults.slice(offset, offset + limitNum);
-      console.log('✅ Paginación manual aplicada, filas en página:', postulaciones.length);
       
       const total = countResults[0].total;
 
@@ -217,7 +207,6 @@ class PostulacionesController {
         };
       }));
 
-      console.log('✅ Datos procesados, enviando respuesta...');
       res.json({
         success: true,
         data: postulacionesFormatted,
@@ -230,8 +219,6 @@ class PostulacionesController {
       });
 
     } catch (error) {
-      console.error('❌ Error al obtener postulaciones:', error);
-      console.error('❌ Stack trace:', error.stack);
       res.status(500).json({
         success: false,
         message: 'Error interno del servidor',
@@ -273,7 +260,6 @@ class PostulacionesController {
       });
 
     } catch (error) {
-      console.error('Error al actualizar estado:', error);
       res.status(500).json({
         success: false,
         message: 'Error interno del servidor',

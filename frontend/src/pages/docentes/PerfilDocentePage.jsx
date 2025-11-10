@@ -115,16 +115,27 @@ const PerfilDocentePage = () => {
     try {
       setSaving(true);
       
-      const response = await docenteAPI.updatePerfil({
+      // Formatear fecha correctamente para MySQL (solo YYYY-MM-DD)
+      let fechaFormateada = tempData.fecha_nacimiento;
+      if (fechaFormateada) {
+        // Si es una fecha ISO, extraer solo la parte YYYY-MM-DD
+        if (fechaFormateada.includes('T')) {
+          fechaFormateada = fechaFormateada.split('T')[0];
+        }
+      }
+      
+      const datosAEnviar = {
         nombres: tempData.nombres,
         apellidos: tempData.apellidos,
         dni: tempData.dni,
-        fecha_nacimiento: tempData.fecha_nacimiento,
+        fecha_nacimiento: fechaFormateada, // Usar fecha formateada
         genero: tempData.genero,
         pais: tempData.pais,
         direccion: tempData.direccion,
         telefono: tempData.telefono
-      });
+      };
+      
+      const response = await docenteAPI.updatePerfil(datosAEnviar);
 
       if (response.success) {
         const formattedData = {
@@ -263,9 +274,18 @@ const PerfilDocentePage = () => {
   // Función para formatear fecha para input date
   const formatDateForInput = (dateString) => {
     if (!dateString) return '';
+    
+    // Si es una fecha ISO completa, extraer solo la parte YYYY-MM-DD
+    if (dateString.includes('T')) {
+      return dateString.split('T')[0];
+    }
+    
+    // Si ya está en formato YYYY-MM-DD, devolverla tal como está
     const date = new Date(dateString);
+    
     // Verificar si la fecha es válida
     if (isNaN(date.getTime())) return '';
+    
     // Formatear a YYYY-MM-DD
     return date.toISOString().split('T')[0];
   };

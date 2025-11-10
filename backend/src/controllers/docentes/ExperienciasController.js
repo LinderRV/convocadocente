@@ -57,7 +57,6 @@ class ExperienciasController {
       });
 
     } catch (error) {
-      console.error('Error en getExperiencias:', error);
       res.status(500).json({
         success: false,
         message: 'Error interno del servidor',
@@ -103,7 +102,6 @@ class ExperienciasController {
       });
 
     } catch (error) {
-      console.error('Error en getExperienciaById:', error);
       res.status(500).json({
         success: false,
         message: 'Error interno del servidor',
@@ -142,7 +140,6 @@ class ExperienciasController {
       let constancia_archivo_final = constancia_archivo;
       if (req.file) {
         constancia_archivo_final = req.file.filename;
-        console.log('Archivo asignado en creación:', constancia_archivo_final);
       }
 
       const experienciaData = {
@@ -168,14 +165,12 @@ class ExperienciasController {
       });
 
     } catch (error) {
-      console.error('Error en createExperiencia:', error);
-      
       // Eliminar archivo subido si hubo error
       if (req.file) {
         try {
           await fs.unlink(req.file.path);
         } catch (unlinkError) {
-          console.error('Error eliminando archivo:', unlinkError);
+          // Error eliminando archivo
         }
       }
       
@@ -246,15 +241,13 @@ class ExperienciasController {
           const archivoAnterior = path.join(__dirname, '../../../uploads/experiencia', `usuario_${userId}`, experienciaExistente.constancia_archivo);
           try {
             await fs.unlink(archivoAnterior);
-            console.log('Archivo anterior eliminado:', experienciaExistente.constancia_archivo);
           } catch (error) {
-            console.log('No se pudo eliminar archivo anterior:', error.message);
+            // No se pudo eliminar archivo anterior
           }
         }
         
         // Usar el nuevo archivo
         constancia_archivo = req.file.filename;
-        console.log('Nuevo archivo asignado:', constancia_archivo);
       }
 
       const experienciaData = {
@@ -279,14 +272,12 @@ class ExperienciasController {
       });
 
     } catch (error) {
-      console.error('Error en updateExperiencia:', error);
-      
       // Eliminar archivo subido si hubo error
       if (req.file) {
         try {
           await fs.unlink(req.file.path);
         } catch (unlinkError) {
-          console.error('Error eliminando archivo:', unlinkError);
+          // Error eliminando archivo
         }
       }
       
@@ -342,7 +333,7 @@ class ExperienciasController {
         try {
           await fs.unlink(archivoAnterior);
         } catch (error) {
-          console.log('No se pudo eliminar archivo anterior:', error.message);
+          // No se pudo eliminar archivo anterior
         }
       }
 
@@ -367,14 +358,12 @@ class ExperienciasController {
       });
 
     } catch (error) {
-      console.error('Error en uploadDocumento:', error);
-      
       // Eliminar archivo subido si hubo error
       if (req.file) {
         try {
           await fs.unlink(req.file.path);
         } catch (unlinkError) {
-          console.error('Error eliminando archivo:', unlinkError);
+          // Error eliminando archivo
         }
       }
       
@@ -442,7 +431,6 @@ class ExperienciasController {
       res.download(archivoPath, experiencia.constancia_archivo);
 
     } catch (error) {
-      console.error('Error en downloadDocumento:', error);
       res.status(500).json({
         success: false,
         message: 'Error interno del servidor',
@@ -465,7 +453,6 @@ class ExperienciasController {
       });
 
     } catch (error) {
-      console.error('Error en getEstadisticas:', error);
       res.status(500).json({
         success: false,
         message: 'Error interno del servidor',

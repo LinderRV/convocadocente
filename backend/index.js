@@ -103,23 +103,17 @@ app.use(errorHandler);
 const startServer = async () => {
     try {
         // Verificar conexión a la base de datos
-        console.log('🔍 Verificando conexión a la base de datos...');
         const dbConnected = await testConnection();
         
         if (!dbConnected) {
-            console.error('❌ No se pudo conectar a la base de datos');
             process.exit(1);
         }
         
         // Iniciar servidor
         app.listen(PORT, () => {
-            console.log(`🚀 Servidor ejecutándose en el puerto ${PORT}`);
-            console.log(`🌍 Entorno: ${process.env.NODE_ENV || 'development'}`);
-            console.log(`📍 URL: http://localhost:${PORT}`);
-            console.log(`🗄️  Base de datos: ${process.env.DB_NAME}`);
+            // Servidor iniciado correctamente
         });
     } catch (error) {
-        console.error('❌ Error al iniciar el servidor:', error);
         process.exit(1);
     }
 };

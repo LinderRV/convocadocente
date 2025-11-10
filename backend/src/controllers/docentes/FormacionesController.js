@@ -58,7 +58,6 @@ class FormacionesController {
       });
 
     } catch (error) {
-      console.error('Error en getFormaciones:', error);
       res.status(500).json({
         success: false,
         message: 'Error interno del servidor',
@@ -104,7 +103,6 @@ class FormacionesController {
       });
 
     } catch (error) {
-      console.error('Error en getFormacionById:', error);
       res.status(500).json({
         success: false,
         message: 'Error interno del servidor',
@@ -139,7 +137,6 @@ class FormacionesController {
       let documento_archivo_final = documento_archivo;
       if (req.file) {
         documento_archivo_final = req.file.filename;
-        console.log('Archivo asignado en creación:', documento_archivo_final);
       }
 
       const formacionData = {
@@ -161,14 +158,12 @@ class FormacionesController {
       });
 
     } catch (error) {
-      console.error('Error en createFormacion:', error);
-      
       // Eliminar archivo subido si hubo error
       if (req.file) {
         try {
           await fs.unlink(req.file.path);
         } catch (unlinkError) {
-          console.error('Error eliminando archivo:', unlinkError);
+          // Error eliminando archivo
         }
       }
       
@@ -235,15 +230,13 @@ class FormacionesController {
           const archivoAnterior = path.join(__dirname, '../../../uploads/formacion', `usuario_${userId}`, formacionExistente.documento_archivo);
           try {
             await fs.unlink(archivoAnterior);
-            console.log('Archivo anterior eliminado:', formacionExistente.documento_archivo);
           } catch (error) {
-            console.log('No se pudo eliminar archivo anterior:', error.message);
+            // No se pudo eliminar archivo anterior
           }
         }
         
         // Usar el nuevo archivo
         documento_archivo = req.file.filename;
-        console.log('Nuevo archivo asignado:', documento_archivo);
       }
 
       const formacionData = {
@@ -264,14 +257,12 @@ class FormacionesController {
       });
 
     } catch (error) {
-      console.error('Error en updateFormacion:', error);
-      
       // Eliminar archivo subido si hubo error
       if (req.file) {
         try {
           await fs.unlink(req.file.path);
         } catch (unlinkError) {
-          console.error('Error eliminando archivo:', unlinkError);
+          // Error eliminando archivo
         }
       }
       
@@ -328,7 +319,6 @@ class FormacionesController {
       });
 
     } catch (error) {
-      console.error('Error en deleteFormacion:', error);
       res.status(500).json({
         success: false,
         message: 'Error interno del servidor',
@@ -381,7 +371,7 @@ class FormacionesController {
         try {
           await fs.unlink(archivoAnterior);
         } catch (error) {
-          console.log('No se pudo eliminar archivo anterior:', error.message);
+          // No se pudo eliminar archivo anterior
         }
       }
 
@@ -406,14 +396,12 @@ class FormacionesController {
       });
 
     } catch (error) {
-      console.error('Error en uploadDocumento:', error);
-      
       // Eliminar archivo subido si hubo error
       if (req.file) {
         try {
           await fs.unlink(req.file.path);
         } catch (unlinkError) {
-          console.error('Error eliminando archivo:', unlinkError);
+          // Error eliminando archivo
         }
       }
       
@@ -476,7 +464,6 @@ class FormacionesController {
       // Enviar archivo con su nombre original
       res.download(archivoPath, formacion.documento_archivo, (error) => {
         if (error) {
-          console.error('Error en descarga:', error);
           res.status(500).json({
             success: false,
             message: 'Error al descargar el archivo'
@@ -485,7 +472,6 @@ class FormacionesController {
       });
 
     } catch (error) {
-      console.error('Error en downloadDocumento:', error);
       res.status(500).json({
         success: false,
         message: 'Error interno del servidor',
@@ -535,7 +521,7 @@ class FormacionesController {
       try {
         await fs.unlink(archivoPath);
       } catch (error) {
-        console.log('Archivo físico no encontrado:', error.message);
+        // Archivo físico no encontrado
       }
 
       // Actualizar base de datos
@@ -548,7 +534,6 @@ class FormacionesController {
       });
 
     } catch (error) {
-      console.error('Error en deleteDocumento:', error);
       res.status(500).json({
         success: false,
         message: 'Error interno del servidor',
@@ -571,7 +556,6 @@ class FormacionesController {
       });
 
     } catch (error) {
-      console.error('Error en getEstadisticas:', error);
       res.status(500).json({
         success: false,
         message: 'Error interno del servidor',

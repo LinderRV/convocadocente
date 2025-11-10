@@ -74,7 +74,6 @@ class DocenteController {
       });
       
     } catch (error) {
-      console.error('Error en getPerfil:', error);
       res.status(500).json({
         success: false,
         message: 'Error interno del servidor',
@@ -154,7 +153,6 @@ class DocenteController {
       });
 
     } catch (error) {
-      console.error('Error en updatePerfil:', error);
       res.status(500).json({
         success: false,
         message: 'Error interno del servidor',
@@ -185,7 +183,7 @@ class DocenteController {
         try {
           await fs.unlink(archivoAnterior);
         } catch (error) {
-          console.log('No se pudo eliminar archivo anterior:', error.message);
+          // Archivo anterior no encontrado
         }
       }
 
@@ -210,14 +208,12 @@ class DocenteController {
       });
 
     } catch (error) {
-      console.error('Error en uploadCV:', error);
-      
       // Eliminar archivo subido si hubo error
       if (req.file) {
         try {
           await fs.unlink(req.file.path);
         } catch (unlinkError) {
-          console.error('Error eliminando archivo:', unlinkError);
+          // Error eliminando archivo
         }
       }
       
@@ -248,7 +244,7 @@ class DocenteController {
       try {
         await fs.unlink(archivoPath);
       } catch (error) {
-        console.log('Archivo físico no encontrado:', error.message);
+        // Archivo físico no encontrado
       }
 
       // Actualizar base de datos
@@ -261,7 +257,6 @@ class DocenteController {
       });
 
     } catch (error) {
-      console.error('Error en deleteCV:', error);
       res.status(500).json({
         success: false,
         message: 'Error interno del servidor',
@@ -299,7 +294,6 @@ class DocenteController {
       // Enviar archivo con su nombre original
       res.download(archivoPath, docente.cv_archivo, (error) => {
         if (error) {
-          console.error('Error en descarga:', error);
           res.status(500).json({
             success: false,
             message: 'Error al descargar el archivo'
@@ -308,7 +302,6 @@ class DocenteController {
       });
 
     } catch (error) {
-      console.error('Error en downloadCV:', error);
       res.status(500).json({
         success: false,
         message: 'Error interno del servidor',
@@ -329,7 +322,6 @@ class DocenteController {
       });
       
     } catch (error) {
-      console.error('Error en getStats:', error);
       res.status(500).json({
         success: false,
         message: 'Error interno del servidor',
