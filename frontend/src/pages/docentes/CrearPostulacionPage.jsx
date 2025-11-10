@@ -24,12 +24,12 @@ import {
   Divider,
   CircularProgress
 } from '@mui/material';
-import {
-  Schedule as ScheduleIcon,
-  AccessTime as AccessTimeIcon,
+import {  
+  PostAdd as PostulacionIcon,
   School as SchoolIcon,
-  Category as CategoryIcon,
-  ExpandMore as ExpandMoreIcon
+  MenuBook as CursosIcon,
+  AccessTime as AccessTimeIcon,  
+  Send as EnviarIcon
 } from '@mui/icons-material';
 import postulacionDocenteAPI from '../../services/docentes/postulacionDocenteAPI';
 
@@ -184,7 +184,7 @@ const CrearPostulacionPage = () => {
       await cargarCursos(facultadSeleccionada, nuevaEspecialidad);
       setAlert({ 
         type: 'info', 
-        message: 'Especialidad seleccionada. Configura tus horarios y elige cursos de interés.' 
+        message: 'Especialidad seleccionada. elige cursos de interés y disponibilidad horaria.' 
       });
     }
   };
@@ -390,13 +390,13 @@ const CrearPostulacionPage = () => {
           pb: 2,
           borderBottom: '2px solid #f0f0f0'
         }}>
-          <ScheduleIcon color="primary" sx={{ fontSize: 40 }} />
+          <PostulacionIcon color="primary" sx={{ fontSize: 40 }} />
           <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
-            � Crear Nueva Postulación
+             Crear Nueva Postulación
           </Typography>
         </Box>
         <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
-          Selecciona una especialidad y configura tus horarios disponibles y cursos de interés
+          Selecciona una facultad/especialidad y selecciona cursos de tu interés y disponibilidad horaria.
         </Typography>
       </Box>
 
@@ -423,7 +423,7 @@ const CrearPostulacionPage = () => {
           }}>
             <SchoolIcon color="primary" sx={{ fontSize: 32 }} />
             <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
-              �️ Seleccionar Facultad y Especialidad
+              Seleccionar Facultad y Especialidad
             </Typography>
           </Box>
 
@@ -472,7 +472,7 @@ const CrearPostulacionPage = () => {
             <Alert severity="info" sx={{ mt: 2 }}>
               <Typography variant="body2">
                 ⚠️ <strong>Importante:</strong> Al cambiar de facultad o especialidad se reiniciará toda la configuración. 
-                Solo puedes tener una postulación activa por especialidad.
+                Solo puedes tener una postulación por especialidad.
               </Typography>
             </Alert>
           )}
@@ -490,9 +490,9 @@ const CrearPostulacionPage = () => {
               pb: 2,
               borderBottom: '2px solid #f0f0f0'
             }}>
-              <CategoryIcon color="primary" sx={{ fontSize: 32 }} />
+              <CursosIcon color="primary" sx={{ fontSize: 32 }} />
               <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
-                📚 Cursos de Interés
+                 Cursos de Interés
               </Typography>
             </Box>
 
@@ -579,12 +579,12 @@ const CrearPostulacionPage = () => {
             }}>
               <AccessTimeIcon color="primary" sx={{ fontSize: 32 }} />
               <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
-                ⏰ Horarios Disponibles
+                 Horarios Disponibles
               </Typography>
             </Box>
 
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Configura tu disponibilidad horaria para dictar clases:
+              Ingresa tu disponibilidad horaria:
             </Typography>
 
             <Grid container spacing={2}>
@@ -667,7 +667,7 @@ const CrearPostulacionPage = () => {
                 size="large"
                 onClick={handleGuardar}
                 disabled={loading}
-                startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <ScheduleIcon />}
+                startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <EnviarIcon />}
                 sx={{ 
                   bgcolor: 'primary.main',
                   color: 'white',

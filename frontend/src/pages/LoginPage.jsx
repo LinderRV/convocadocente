@@ -142,7 +142,7 @@ const LoginPage = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        /*background: 'linear-gradient(135deg, #e50a5e 0%, #764ba2 100%)',*/
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -165,7 +165,7 @@ const LoginPage = () => {
               <Box
                 sx={{
                   flex: 1,
-                  background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                  background: 'linear-gradient(45deg, #64082b 30%, #e50a5e 90%)',
                   display: { xs: 'none', md: 'flex' },
                   flexDirection: 'column',
                   justifyContent: 'center',
@@ -184,7 +184,7 @@ const LoginPage = () => {
                 <Typography variant="body1" sx={{ opacity: 0.8, maxWidth: 300 }}>
                   {isRegisterMode 
                     ? 'Únete a nuestra plataforma y accede a las mejores oportunidades académicas'
-                    : 'Registra tu experiencia, formación y disponibilidad para postular a cursos en distintas especialidades.'
+                    : 'Cambia tu historia'
                   }
                 </Typography>
               </Box>
@@ -300,9 +300,9 @@ const LoginPage = () => {
                       fontWeight: 600,
                       borderRadius: 2,
                       textTransform: 'none',
-                      background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                      background: 'linear-gradient(45deg, #64082b 30%, #e50a5e 90%)',
                       '&:hover': {
-                        background: 'linear-gradient(45deg, #1976D2 30%, #1FB3D3 90%)',
+                        background: 'linear-gradient(45deg, #e50a5e 30%, #64082b 90%)',
                       }
                     }}
                   >

@@ -152,7 +152,7 @@ const Layout = () => {
     },
     {
       text: 'Postular',
-      icon: <ScheduleIcon />,
+      icon: <PostulacionIcon />,
       path: '/docente/crearpostulacion',
       description: 'cursos de interes y disponiblidad horaria'
     },
