@@ -1,6 +1,7 @@
 const { body, validationResult } = require('express-validator');
 const AuthService = require('../services/AuthService');
 const { OAuth2Client } = require('google-auth-library');
+const config = require('../config');
 
 class AuthController {
     // Validaciones para registro
@@ -52,7 +53,7 @@ class AuthController {
                 data: {
                     user: result.user,
                     // En producción, no enviar el token de verificación
-                    ...(process.env.NODE_ENV === 'development' && {
+                    ...(config.server.isDevelopment && {
                         verificationToken: result.verificationToken
                     })
                 }
@@ -103,10 +104,10 @@ class AuthController {
 
             if (credential) {
                 // Verificar credential token con Google
-                const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+                const client = new OAuth2Client(config.google.clientId);
                 const ticket = await client.verifyIdToken({
                     idToken: credential,
-                    audience: process.env.GOOGLE_CLIENT_ID,
+                    audience: config.google.clientId,
                 });
                 googlePayload = ticket.getPayload();
             } else if (userInfo) {
@@ -191,7 +192,7 @@ class AuthController {
                 success: true,
                 message: result.message,
                 // En desarrollo, mostrar el token
-                ...(process.env.NODE_ENV === 'development' && result.resetToken && {
+                ...(config.server.isDevelopment && result.resetToken && {
                     resetToken: result.resetToken
                 })
             });

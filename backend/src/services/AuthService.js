@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const Usuario = require('../models/Usuario');
+const config = require('../config');
 
 class AuthService {
     // Registrar nuevo usuario
@@ -14,7 +15,7 @@ class AuthService {
             }
 
             // Encriptar contraseña
-            const saltRounds = 12;
+            const saltRounds = config.security.bcryptSaltRounds;
             const hashedPassword = await bcrypt.hash(userData.password, saltRounds);
 
             // Crear usuario
@@ -120,17 +121,20 @@ class AuthService {
             rol: user.roles && user.roles.length > 0 ? user.roles[0] : null // Primer rol como rol principal
         };
 
-        return jwt.sign(payload, process.env.JWT_SECRET || 'fallback_secret', {
-            expiresIn: process.env.JWT_EXPIRES_IN || '24h',
-            issuer: 'convocadocente',
-            audience: 'convocadocente-users'
+        return jwt.sign(payload, config.jwt.secret, {
+            expiresIn: config.jwt.expiresIn,
+            issuer: config.jwt.issuer,
+            audience: config.jwt.audience
         });
     }
 
     // Verificar token JWT
     static verifyToken(token) {
         try {
-            return jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
+            return jwt.verify(token, config.jwt.secret, {
+                issuer: config.jwt.issuer,
+                audience: config.jwt.audience
+            });
         } catch (error) {
             throw new Error('Token inválido o expirado');
         }

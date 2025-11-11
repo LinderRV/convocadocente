@@ -55,6 +55,7 @@ import {
 
 // Importar API
 import postulacionesAPI from '../services/postulacionesAPI';
+import URLService from '../services/URLService';
 
 const PostulacionesPage = () => {
   const [postulaciones, setPostulaciones] = useState([]);
@@ -211,7 +212,13 @@ const PostulacionesPage = () => {
     
     try {
       // Descargar directamente al ordenador usando fetch
-      const url = `http://localhost:3000/uploads/cv/usuario_${docente.id}/${docente.cv_archivo}`;
+      const url = URLService.getCVURL(docente.id, docente.cv_archivo);
+      
+      if (!url) {
+        setError('No hay archivo CV disponible para descargar');
+        return;
+      }
+      
       const response = await fetch(url);
       
       if (!response.ok) {
@@ -242,7 +249,13 @@ const PostulacionesPage = () => {
     
     try {
       // Descargar directamente al ordenador usando fetch
-      const url = `http://localhost:3000/uploads/formacion/usuario_${docenteId}/${formacion.documento_archivo}`;
+      const url = URLService.getFormacionURL(docenteId, formacion.documento_archivo);
+      
+      if (!url) {
+        setAlert({ type: 'error', message: 'No hay documento disponible para descargar' });
+        return;
+      }
+      
       const response = await fetch(url);
       
       if (!response.ok) {
@@ -273,7 +286,13 @@ const PostulacionesPage = () => {
     
     try {
       // Descargar directamente al ordenador usando fetch
-      const url = `http://localhost:3000/uploads/experiencia/usuario_${docenteId}/${experiencia.constancia_archivo}`;
+      const url = URLService.getExperienciaURL(docenteId, experiencia.constancia_archivo);
+      
+      if (!url) {
+        setAlert({ type: 'error', message: 'No hay constancia disponible para descargar' });
+        return;
+      }
+      
       const response = await fetch(url);
       
       if (!response.ok) {

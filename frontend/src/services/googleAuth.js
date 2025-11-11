@@ -1,7 +1,7 @@
 // Servicio de autenticación con Google - IMPLEMENTACIÓN REAL OPTIMIZADA
 class GoogleAuthService {
   constructor() {
-    this.clientId = '977301681092-9ai03ej4dh51k6n80404m7s6mlc5on1j.apps.googleusercontent.com';
+    this.clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
     this.isInitialized = false;
   }
 
