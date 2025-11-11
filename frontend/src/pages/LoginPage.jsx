@@ -175,6 +175,23 @@ const LoginPage = () => {
                   textAlign: 'center'
                 }}
               >
+                {/* Logo UMA */}
+                <Box
+                  component="img"
+                  src="/logo-uma.png"
+                  alt="Universidad María Auxiliadora"
+                  sx={{
+                    width: { md: '180px', lg: '260px' },
+                    height: 'auto',
+                    mb: 3,
+                    filter: 'brightness(0) invert(1)', // Hace el logo blanco
+                    transition: 'transform 0.3s ease',
+                    '&:hover': {
+                      transform: 'scale(1.05)'
+                    }
+                  }}
+                />
+                
                 <Typography variant="h3" fontWeight="bold" gutterBottom>
                   ConvocaDocente
                 </Typography>
@@ -191,6 +208,29 @@ const LoginPage = () => {
 
               {/* Panel derecho - Formulario */}
               <Box sx={{ flex: 1, p: 4, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                {/* Logo para móviles */}
+                <Box 
+                  sx={{ 
+                    display: { xs: 'flex', md: 'none' }, 
+                    justifyContent: 'center', 
+                    mb: 3 
+                  }}
+                >
+                  <Box
+                    component="img"
+                    src="/logo-uma.png"
+                    alt="Universidad María Auxiliadora"
+                    sx={{
+                      width: '100px',
+                      height: 'auto',
+                      transition: 'transform 0.3s ease',
+                      '&:hover': {
+                        transform: 'scale(1.05)'
+                      }
+                    }}
+                  />
+                </Box>
+
                 <Box sx={{ mb: 4, textAlign: 'center' }}>
                   <Typography variant="h4" fontWeight="600" color="primary" gutterBottom>
                     {isRegisterMode ? 'Crear Cuenta' : 'Bienvenido'}
